@@ -37,6 +37,8 @@ type AppSettings struct {
 	AutoUpdate    bool   `json:"autoUpdate"`
 	VlinkAutoStart bool  `json:"vlinkAutoStart"`
 	Notes         string `json:"notes"`
+	PomodoroNotifyDesktop bool `json:"pomodoroNotifyDesktop"`
+	PomodoroNotifySound   bool `json:"pomodoroNotifySound"`
 }
 
 // NewApp creates a new App application struct
@@ -91,6 +93,8 @@ func defaultSettings() AppSettings {
 		AutoUpdate:    true,
 		VlinkAutoStart: false,
 		Notes:         "",
+		PomodoroNotifyDesktop: true,
+		PomodoroNotifySound:   false,
 	}
 }
 

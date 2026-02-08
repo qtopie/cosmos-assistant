@@ -8,6 +8,7 @@ import {
   Body1,
 } from '@fluentui/react-components';
 import ChatPanel, { ChatMessage } from '../../components/ChatPanel';
+import TodoList, { TodoItem } from '../../components/TodoList';
 
 type MetricItem = {
   label: string;
@@ -35,6 +36,11 @@ type DashboardProps = {
   onRemoveAttachment: (index: number) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   chatBodyRef: React.RefObject<HTMLDivElement>;
+  todoItems: TodoItem[];
+  onToggleTodo: (id: string) => void;
+  onOpenBoard: () => void;
+  onOpenEditor: () => void;
+  onOpenPomodoro: () => void;
 };
 
 export default function Dashboard({
@@ -52,13 +58,22 @@ export default function Dashboard({
   onRemoveAttachment,
   fileInputRef,
   chatBodyRef,
+  todoItems,
+  onToggleTodo,
+  onOpenBoard,
+  onOpenEditor,
+  onOpenPomodoro,
 }: DashboardProps) {
   return (
     <>
       <section className="dashboard">
         <div className="section-header">
           <Subtitle1>Dashboard</Subtitle1>
-          <Button appearance="secondary">查看全局</Button>
+          <div className="header-actions">
+            <Button appearance="secondary" onClick={onOpenEditor}>写文章</Button>
+            <Button appearance="secondary" onClick={onOpenPomodoro}>番茄计时</Button>
+            <Button appearance="secondary" onClick={onOpenBoard}>查看看板</Button>
+          </div>
         </div>
         <div className="metric-grid" id="metricGrid">
           {metrics.map((item) => (
@@ -102,6 +117,8 @@ export default function Dashboard({
             <Button appearance="secondary">稍后提醒</Button>
           </div>
         </Card>
+
+        <TodoList items={todoItems} onToggleItem={onToggleTodo} onOpenBoard={onOpenBoard} />
       </section>
       <ChatPanel
         messages={messages}

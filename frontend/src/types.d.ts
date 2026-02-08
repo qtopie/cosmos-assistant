@@ -11,6 +11,8 @@ type AppSettings = {
     autoUpdate: boolean;
     vlinkAutoStart: boolean;
     notes: string;
+    pomodoroNotifyDesktop: boolean;
+    pomodoroNotifySound: boolean;
 };
 
 declare global {

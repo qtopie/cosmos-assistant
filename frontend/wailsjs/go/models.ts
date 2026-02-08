@@ -5,6 +5,8 @@ export namespace main {
 	    autoUpdate: boolean;
 	    vlinkAutoStart: boolean;
 	    notes: string;
+	    pomodoroNotifyDesktop: boolean;
+	    pomodoroNotifySound: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppSettings(source);
@@ -16,6 +18,8 @@ export namespace main {
 	        this.autoUpdate = source["autoUpdate"];
 	        this.vlinkAutoStart = source["vlinkAutoStart"];
 	        this.notes = source["notes"];
+	        this.pomodoroNotifyDesktop = source["pomodoroNotifyDesktop"];
+	        this.pomodoroNotifySound = source["pomodoroNotifySound"];
 	    }
 	}
 	export class GeminiAttachment {

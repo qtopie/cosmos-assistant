@@ -54,7 +54,7 @@ jobs:
             libatk1.0-dev
 
       - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.1
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
 
       - name: Wails doctor (Linux)
         if: runner.os == 'Linux'

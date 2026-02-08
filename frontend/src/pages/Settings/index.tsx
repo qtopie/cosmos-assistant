@@ -6,6 +6,8 @@ export type AppSettings = {
     autoUpdate: boolean;
     vlinkAutoStart: boolean;
     notes: string;
+    pomodoroNotifyDesktop: boolean;
+    pomodoroNotifySound: boolean;
 };
 
 type SettingsProps = {
@@ -72,6 +74,26 @@ export default function Settings({ settings, error, onBack, onSave, onUpdate }: 
                             checked={settings.vlinkAutoStart}
                             onChange={(_, data) => onUpdate((prev) => ({ ...prev, vlinkAutoStart: data.checked }))}
                             label="启动时自动开启网络加速"
+                        />
+                    </div>
+                </Card>
+
+                <Card className="panel">
+                    <div className="panel-title">通知</div>
+                    <div className="settings-form">
+                        <Switch
+                            checked={settings.pomodoroNotifyDesktop}
+                            onChange={(_, data) =>
+                                onUpdate((prev) => ({ ...prev, pomodoroNotifyDesktop: data.checked }))
+                            }
+                            label="番茄计时桌面通知"
+                        />
+                        <Switch
+                            checked={settings.pomodoroNotifySound}
+                            onChange={(_, data) =>
+                                onUpdate((prev) => ({ ...prev, pomodoroNotifySound: data.checked }))
+                            }
+                            label="番茄计时提示音"
                         />
                     </div>
                 </Card>

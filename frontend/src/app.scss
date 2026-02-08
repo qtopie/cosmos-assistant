@@ -32,6 +32,22 @@
     flex-wrap: wrap;
 }
 
+.subpage-home {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.subpage-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
 .status-dot {
     display: inline-block;
     width: 8px;
@@ -187,6 +203,14 @@
     grid-template-columns: 1fr;
 }
 
+.domour-main.board-view {
+    grid-template-columns: 1fr;
+}
+
+.domour-main.editor-view {
+    grid-template-columns: 1fr;
+}
+
 .dashboard {
     display: flex;
     flex-direction: column;
@@ -197,6 +221,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
 }
 
 .section-header h2 {
@@ -252,6 +281,13 @@
     gap: 12px;
 }
 
+.panel-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 .panel-title {
     font-weight: 600;
     color: #f8fafc;
@@ -304,10 +340,535 @@
     margin-top: 8px;
 }
 
+.todo-panel {
+    gap: 16px;
+}
+
+.todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(30, 41, 59, 0.55);
+}
+
+.todo-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.todo-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.todo-meta {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.todo-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.5);
+    white-space: nowrap;
+}
+
+.todo-tag.todo {
+    border-color: rgba(56, 189, 248, 0.6);
+    color: #bae6fd;
+}
+
+.todo-tag.doing {
+    border-color: rgba(245, 158, 11, 0.6);
+    color: #fef3c7;
+}
+
+.todo-tag.done {
+    border-color: rgba(34, 197, 94, 0.6);
+    color: #bbf7d0;
+}
+
+.board-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.board-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.board-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.board-modes {
+    display: flex;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.kanban-column {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.kanban-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.kanban-title.todo {
+    color: #bae6fd;
+}
+
+.kanban-title.doing {
+    color: #fde68a;
+}
+
+.kanban-title.done {
+    color: #bbf7d0;
+}
+
+.kanban-count {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.2);
+}
+
+.kanban-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kanban-card {
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kanban-card-title {
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.kanban-card-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.gantt-board {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.gantt-grid {
+    display: grid;
+    grid-template-columns: 180px repeat(7, minmax(0, 1fr));
+    gap: 0;
+    position: relative;
+}
+
+.gantt-cell {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    border-right: 1px solid rgba(148, 163, 184, 0.12);
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.gantt-header .gantt-cell {
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(30, 41, 59, 0.4);
+}
+
+.gantt-label {
+    justify-content: flex-start;
+    padding: 0 12px;
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.gantt-day-name {
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.gantt-day-date {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.gantt-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gantt-row {
+    align-items: stretch;
+}
+
+.gantt-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.gantt-item-meta {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.gantt-bar {
+    grid-row: 1;
+    align-self: center;
+    height: 28px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #0f172a;
+    font-weight: 600;
+    background: #38bdf8;
+    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.3);
+}
+
+.gantt-bar.doing {
+    background: #f59e0b;
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+
+.gantt-bar.done {
+    background: #22c55e;
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+}
+
+.calendar-board {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.calendar-cell {
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 160px;
+}
+
+.calendar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.calendar-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendar-item {
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.calendar-item.todo {
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.calendar-item.doing {
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.calendar-item.done {
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.calendar-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.calendar-tag {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.calendar-empty {
+    font-size: 12px;
+    color: #64748b;
+}
+
 .settings-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.editor-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.pomodoro-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.pomodoro-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.pomodoro-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.pomodoro-card {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+}
+
+
+.pomodoro-modes {
+    display: flex;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.pomodoro-timer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.pomodoro-ring {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+        conic-gradient(#38bdf8 calc(var(--progress) * 1turn), rgba(148, 163, 184, 0.15) 0),
+        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.9) 58%, transparent 59%);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
+}
+
+.pomodoro-time {
+    font-size: 40px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.pomodoro-sub {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.pomodoro-footer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+
+.pomodoro-stat {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 6px;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.editor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    flex: 1;
+}
+
+.editor-panel {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+}
+
+.editor-input {
+    flex: 1;
+    min-height: 320px;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.5);
+    color: #e2e8f0;
+    padding: 12px;
+}
+
+.editor-preview {
+    flex: 1;
+    overflow: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(8, 12, 20, 0.6);
+    padding: 14px 16px;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+    margin: 0 0 12px;
+    color: #f8fafc;
+}
+
+.markdown-body p,
+.markdown-body li {
+    color: #cbd5f5;
+    line-height: 1.6;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+    padding-left: 18px;
+}
+
+.markdown-body code {
+    background: rgba(56, 189, 248, 0.15);
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #bae6fd;
+}
+
+.markdown-body blockquote {
+    margin: 12px 0;
+    padding: 8px 12px;
+    border-left: 3px solid rgba(56, 189, 248, 0.6);
+    background: rgba(56, 189, 248, 0.08);
+    color: #bae6fd;
 }
 
 .settings-header {
@@ -509,5 +1070,21 @@
 
     .metric-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .editor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pomodoro-footer {
+        grid-template-columns: 1fr;
     }
 }

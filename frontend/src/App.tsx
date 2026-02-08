@@ -16,9 +16,14 @@ import {
     Badge,
     Spinner,
 } from '@fluentui/react-components';
+import { Home24Regular } from '@fluentui/react-icons';
 import { EventsOn } from '../wailsjs/runtime/runtime';
 import Dashboard from './pages/Dashboard';
+import WorkBoard from './pages/WorkBoard';
+import ArticleEditor from './pages/ArticleEditor';
+import Pomodoro from './pages/Pomodoro';
 import { ChatMessage } from './components/ChatPanel';
+import { TodoItem } from './components/TodoList';
 import Settings, { AppSettings } from './pages/Settings';
 
 type GeminiAttachment = {
@@ -46,6 +51,69 @@ const activityFeed = [
 const starterMessages: ChatMessage[] = [
     { role: 'assistant', content: '早上好！我可以帮你准备今日计划。' },
     { role: 'assistant', content: '是否要打开“专注办公”场景并同步设备状态？' },
+];
+
+const starterTodos: TodoItem[] = [
+    {
+        id: 'task-1',
+        title: '整理新客户画像与目标清单',
+        owner: '星络',
+        due: '2026-02-10',
+        tag: '增长',
+        status: 'todo',
+        start: '2026-02-09',
+        end: '2026-02-11',
+    },
+    {
+        id: 'task-2',
+        title: '复盘自动化告警与响应链路',
+        owner: '联枢',
+        due: '2026-02-11',
+        tag: '稳定性',
+        status: 'doing',
+        start: '2026-02-10',
+        end: '2026-02-12',
+    },
+    {
+        id: 'task-3',
+        title: '输出商业报表生成策略',
+        owner: '析者',
+        due: '2026-02-12',
+        tag: '报表',
+        status: 'doing',
+        start: '2026-02-11',
+        end: '2026-02-14',
+    },
+    {
+        id: 'task-4',
+        title: '同步 IoT 设备巡检计划',
+        owner: '守望',
+        due: '2026-02-13',
+        tag: '设备',
+        status: 'todo',
+        start: '2026-02-12',
+        end: '2026-02-15',
+    },
+    {
+        id: 'task-5',
+        title: '确认跨部门排期与资源冲突',
+        owner: '协调组',
+        due: '2026-02-14',
+        tag: '协同',
+        status: 'todo',
+        start: '2026-02-13',
+        end: '2026-02-16',
+    },
+    {
+        id: 'task-6',
+        title: '归档已完成的情报回收清单',
+        owner: '归档',
+        due: '2026-02-09',
+        tag: '归档',
+        status: 'done',
+        start: '2026-02-08',
+        end: '2026-02-09',
+    },
 ];
 
 const isLikelyTextFile = (file: File) => {
@@ -119,16 +187,24 @@ export default function App() {
         ((result: { confirmed: boolean; password: string }) => void) | null
     >(null);
 
-    const [activeView, setActiveView] = useState<'home' | 'settings'>('home');
+    const [activeView, setActiveView] = useState<'home' | 'settings' | 'board' | 'editor' | 'pomodoro'>('home');
     const [settingsDraft, setSettingsDraft] = useState<AppSettings | null>(null);
     const [settingsError, setSettingsError] = useState('');
+    const [todos, setTodos] = useState<TodoItem[]>(starterTodos);
+    const [articleDraft, setArticleDraft] = useState(
+        '# 今日协同计划\n\n- 目标一：统一跨部门排期\n- 目标二：完善自动化告警\n\n## 关键动作\n\n1. 明确责任人\n2. 完成风险评估\n3. 输出复盘清单\n\n> 支持 **Markdown** 与任务清单。\n'
+    );
 
     const fallbackSettings: AppSettings = {
         displayName: 'Domour Copilot',
         autoUpdate: true,
         vlinkAutoStart: false,
         notes: '',
+        pomodoroNotifyDesktop: true,
+        pomodoroNotifySound: false,
     };
+
+    const currentSettings = settingsDraft ?? fallbackSettings;
 
     const chatBodyRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -143,7 +219,7 @@ export default function App() {
     const loadSettings = async () => {
         try {
             const current = await window.go.main.App.GetSettings();
-            setSettingsDraft(current);
+            setSettingsDraft({ ...fallbackSettings, ...current });
         } catch {
             setSettingsError('设置加载失败');
         }
@@ -358,37 +434,88 @@ export default function App() {
         }
     };
 
+    const handleToggleTodo = (id: string) => {
+        setTodos((prev) =>
+            prev.map((item) =>
+                item.id === id
+                    ? { ...item, status: item.status === 'done' ? 'todo' : 'done' }
+                    : item
+            )
+        );
+    };
+
+
+    const isSubpage = activeView !== 'home';
+    const pageTitleMap: Record<typeof activeView, string> = {
+        home: '首页',
+        settings: '设置',
+        board: '任务看板',
+        editor: '文章编辑',
+        pomodoro: '番茄计时器',
+    };
 
     return (
         <FluentProvider theme={webDarkTheme}>
             <div className="domour-shell" id="mainView">
-                <header className="domour-header">
-                    <div>
-                        <div className="domour-title">Domour Copilot</div>
-                        <div className="domour-subtitle">协同优先 · 自动化放权</div>
-                    </div>
-                    <div className="domour-status">
-                        <Badge appearance="filled" color="brand">Cosmos-Star 在线</Badge>
-                        <Badge appearance="outline">本地模式</Badge>
-                        <ToggleButton
-                            checked={isProxyEnabled}
-                            onClick={handleVlinkToggle}
-                            appearance="subtle"
-                        >
-                            网络加速
-                            <span className={`status-dot ${vlinkStatus}`} title={vlinkStatus === 'ok' ? '正常' : vlinkStatus === 'error' ? '异常' : '未启动'} />
-                        </ToggleButton>
-                    </div>
-                </header>
+                {!isSubpage && (
+                    <header className="domour-header">
+                        <div>
+                            <div className="domour-title">Domour Copilot</div>
+                            <div className="domour-subtitle">协同优先 · 自动化放权</div>
+                        </div>
+                        <div className="domour-status">
+                            <Badge appearance="filled" color="brand">Cosmos-Star 在线</Badge>
+                            <Badge appearance="outline">本地模式</Badge>
+                            <ToggleButton
+                                checked={isProxyEnabled}
+                                onClick={handleVlinkToggle}
+                                appearance="subtle"
+                            >
+                                网络加速
+                                <span className={`status-dot ${vlinkStatus}`} title={vlinkStatus === 'ok' ? '正常' : vlinkStatus === 'error' ? '异常' : '未启动'} />
+                            </ToggleButton>
+                        </div>
+                    </header>
+                )}
 
-                <main className={`domour-main ${activeView === 'settings' ? 'settings-view' : ''}`}>
+                {isSubpage && (
+                    <div className="subpage-home">
+                        <Button
+                            appearance="secondary"
+                            icon={<Home24Regular />}
+                            onClick={() => setActiveView('home')}
+                            aria-label="返回首页"
+                            title="返回首页"
+                        />
+                        <div className="subpage-title">{pageTitleMap[activeView]}</div>
+                    </div>
+                )}
+
+                <main
+                    className={`domour-main ${activeView === 'settings' ? 'settings-view' : ''} ${
+                        activeView === 'board' ? 'board-view' : ''
+                    } ${activeView === 'editor' ? 'editor-view' : ''}`}
+                >
                     {activeView === 'settings' ? (
                         <Settings
-                            settings={settingsDraft ?? fallbackSettings}
+                            settings={currentSettings}
                             error={settingsError}
                             onBack={() => setActiveView('home')}
                             onSave={handleSettingsSave}
                             onUpdate={updateSettingsDraft}
+                        />
+                    ) : activeView === 'board' ? (
+                        <WorkBoard items={todos} onBack={() => setActiveView('home')} />
+                    ) : activeView === 'editor' ? (
+                        <ArticleEditor
+                            content={articleDraft}
+                            onChange={setArticleDraft}
+                            onBack={() => setActiveView('home')}
+                        />
+                    ) : activeView === 'pomodoro' ? (
+                        <Pomodoro
+                            notifyDesktop={currentSettings.pomodoroNotifyDesktop}
+                            notifySound={currentSettings.pomodoroNotifySound}
                         />
                     ) : (
                         <Dashboard
@@ -406,6 +533,11 @@ export default function App() {
                             onRemoveAttachment={removeAttachment}
                             fileInputRef={fileInputRef}
                             chatBodyRef={chatBodyRef}
+                            todoItems={todos}
+                            onToggleTodo={handleToggleTodo}
+                            onOpenBoard={() => setActiveView('board')}
+                            onOpenEditor={() => setActiveView('editor')}
+                            onOpenPomodoro={() => setActiveView('pomodoro')}
                         />
                     )}
                 </main>
