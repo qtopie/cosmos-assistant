@@ -1,9 +1,9 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "tars-copilot",
-  "outputfilename": "TARS Copilot",
+  "name": "domour-copilot",
+  "outputfilename": "Domour Copilot",
   "info": {
-    "productName": "TARS Copilot"
+    "productName": "Domour Copilot"
   },
   "frontend:install": "npm install",
   "frontend:build": "npm run build",

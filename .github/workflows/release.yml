@@ -70,11 +70,11 @@ jobs:
           $OutDir = "dist"
           New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
-          $SourceBin = Join-Path $BinDir "tars-copilot.exe"
-          $TargetBin = Join-Path $OutDir "tars-copilot.exe"
+          $SourceBin = Join-Path $BinDir "domour-copilot.exe"
+          $TargetBin = Join-Path $OutDir "domour-copilot.exe"
           Copy-Item $SourceBin $TargetBin -Force
 
-          $ZipPath = Join-Path $OutDir "tars-copilot_${Version}_${Goos}_${Goarch}.zip"
+          $ZipPath = Join-Path $OutDir "domour-copilot_${Version}_${Goos}_${Goarch}.zip"
           Compress-Archive -Path $TargetBin -DestinationPath $ZipPath -Force
           Remove-Item $TargetBin -Force
 
@@ -85,9 +85,9 @@ jobs:
           VERSION="${GITHUB_REF_NAME}"
           GOOS="$(go env GOOS)"
           GOARCH="$(go env GOARCH)"
-          APP_NAME="TARS Copilot"
-          APP_BUNDLE="tars-copilot.app"
-          APP_BIN="tars-copilot"
+          APP_NAME="Domour Copilot"
+          APP_BUNDLE="domour-copilot.app"
+          APP_BIN="domour-copilot"
           BIN_DIR="build/bin"
           OUT_DIR="dist"
           mkdir -p "$OUT_DIR"
@@ -98,9 +98,9 @@ jobs:
             SOURCE_BIN="$BIN_DIR/${APP_BIN}"
           fi
 
-          TARGET_BIN="tars-copilot"
+          TARGET_BIN="domour-copilot"
           cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
-          (cd "$OUT_DIR" && tar -czf "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
+          (cd "$OUT_DIR" && tar -czf "domour-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
           rm -f "$OUT_DIR/$TARGET_BIN"
 
       - name: Start SSH agent

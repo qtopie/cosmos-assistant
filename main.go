@@ -4,20 +4,31 @@ import (
 	"embed"
 
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	// Create an instance of the app structure
 	app := NewApp()
 
-	// Create application with options
+	// 菜单栏
+	appMenu := menu.NewMenu()
+	FileMenu := appMenu.AddSubmenu("App")
+	FileMenu.AddText("About", nil, func(_ *menu.CallbackData) {
+		wailsruntime.EventsEmit(app.ctx, "menu:about", nil)
+	})
+	FileMenu.AddSeparator()
+	FileMenu.AddText("Check for Updates...", nil, func(_ *menu.CallbackData) {
+		wailsruntime.EventsEmit(app.ctx, "menu:update", nil)
+	})
+
 	err := wails.Run(&options.App{
-		Title:  "TARS Copilot",
+		Title:  "Domour Copilot",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
@@ -28,8 +39,8 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		Menu: appMenu,
 	})
-
 	if err != nil {
 		println("Error:", err.Error())
 	}

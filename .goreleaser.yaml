@@ -1,7 +1,7 @@
 # GoReleaser configuration
 version: 2
 
-project_name: tars-copilot
+project_name: domour-copilot
 
 before:
   hooks:
@@ -9,9 +9,9 @@ before:
     - npm run build --prefix frontend
 
 builds:
-  - id: tars-copilot
+  - id: domour-copilot
     main: .
-    binary: tars-copilot
+    binary: domour-copilot
     flags:
       - -tags=production
     env:
@@ -31,7 +31,15 @@ archives:
   - format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     wrap_in_directory: false
-    files: []
+    files:
+      - "build/bin/domour-copilot.app"
+    files_overrides:
+      - goos: windows
+        files:
+          - "build/bin/domour-copilot.app"
+      - goos: linux
+        files:
+          - "build/bin/domour-copilot.app"
     format_overrides:
       - goos: windows
         format: zip

@@ -1,4 +1,4 @@
-.tars-shell {
+.domour-shell {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -7,65 +7,176 @@
     gap: 24px;
 }
 
-.tars-header {
+.domour-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
 }
 
-.tars-title {
+.domour-title {
     font-size: 24px;
     font-weight: 700;
     color: #f8fafc;
 }
 
-.tars-subtitle {
+.domour-subtitle {
     font-size: 14px;
     color: #94a3b8;
     margin-top: 6px;
 }
 
-.tars-status {
+.domour-status {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
 }
 
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 8px;
+    background-color: #94a3b8; /* default gray */
+}
+
+.status-dot.ok {
+    background-color: #22c55e; /* green */
+    box-shadow: 0 0 4px #22c55e;
+}
+
+.status-dot.error {
+    background-color: #ef4444; /* red */
+    box-shadow: 0 0 4px #ef4444;
+}
+
+.status-dot.idle {
+    background-color: #64748b; /* gray */
+}
+
 .status-pill {
     padding: 6px 12px;
     border-radius: 999px;
-    font-size: 12px;
-    color: #e2e8f0;
-    background: rgba(148, 163, 184, 0.2);
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
 }
 
-.status-pill.online {
-    background: rgba(34, 197, 94, 0.18);
-    border-color: rgba(34, 197, 94, 0.4);
-    color: #bbf7d0;
+.modal-backdrop.open {
+    display: flex;
 }
 
-.status-pill.ok {
-    background: rgba(34, 197, 94, 0.18);
-    border-color: rgba(34, 197, 94, 0.4);
-    color: #bbf7d0;
+.modal {
+    background: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 20px 22px;
+    width: min(420px, 90vw);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.5);
 }
 
-.status-pill.error {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.45);
-    color: #fecaca;
+.modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 12px;
 }
 
-.status-pill.idle {
-    background: rgba(148, 163, 184, 0.18);
-    border-color: rgba(148, 163, 184, 0.35);
+.modal-body {
     color: #cbd5f5;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
-.tars-main {
+.modal-label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.modal-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.text-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(15, 23, 42, 0.6);
+    color: #e2e8f0;
+    font-size: 13px;
+    outline: none;
+}
+
+.text-input:focus {
+    border-color: rgba(56, 189, 248, 0.8);
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.install-shell {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at top left, #1e293b, #0f172a 55%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+}
+
+.install-shell.active {
+    display: flex;
+}
+
+.install-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 18px;
+    padding: 28px 30px;
+    width: min(520px, 90vw);
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.5);
+}
+
+.install-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.install-subtitle {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.install-progress {
+    margin-top: 18px;
+    font-size: 14px;
+    color: #e2e8f0;
+}
+
+.domour-main {
     display: grid;
     grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr);
     gap: 24px;
@@ -193,18 +304,21 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(12, 18, 30, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.25);
     border-radius: 18px;
     padding: 18px;
     height: 100%;
     box-sizing: border-box;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.35);
 }
 
 .chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .chat-body {
@@ -213,7 +327,10 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-right: 4px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .chat-message {
@@ -226,6 +343,7 @@
     max-width: 80%;
     font-size: 13px;
     line-height: 1.5;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
 }
 
 .chat-message.assistant {
@@ -256,20 +374,45 @@
     align-items: stretch;
 }
 
-.attachment-row {
+.chat-compose {
     display: flex;
-    align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
+    align-items: flex-end;
 }
 
-.attachment-list {
+.chat-compose-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: rgba(15, 23, 42, 0.65);
+    padding: 10px 12px;
+}
+
+.chat-input textarea {
+    flex: 1;
+    min-height: 36px;
+    max-height: 160px;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    color: #e2e8f0;
+    padding: 0;
+    outline: none;
+    resize: none;
+    line-height: 1.4;
+    font-family: inherit;
+}
+
+.chat-attachments {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
 
-.attachment-chip {
+.chat-attachment {
     border: 1px dashed rgba(148, 163, 184, 0.45);
     background: rgba(30, 41, 59, 0.35);
     color: #e2e8f0;
@@ -279,25 +422,19 @@
     cursor: pointer;
 }
 
-.chat-compose {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+.chat-attachment:hover {
+    border-color: rgba(148, 163, 184, 0.7);
 }
 
-.chat-input textarea {
-    flex: 1;
-    min-height: 40px;
-    max-height: 140px;
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    background: rgba(15, 23, 42, 0.6);
-    color: #e2e8f0;
-    padding: 10px 12px;
-    outline: none;
-    resize: none;
-    line-height: 1.4;
-    font-family: inherit;
+.chat-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-actions button {
+    min-height: 36px;
+    padding: 0 14px;
 }
 
 .primary-btn,
@@ -331,7 +468,7 @@
 }
 
 @media (max-width: 1100px) {
-    .tars-main {
+    .domour-main {
         grid-template-columns: 1fr;
     }
 

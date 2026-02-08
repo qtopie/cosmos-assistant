@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/inconshreveable/go-update"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -37,6 +38,11 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+// About returns app info for About dialog
+func (a *App) About() string {
+	return "A smart assistant\n\nMade with ♥ in Guangzhou by ©qtopie 2026"
 }
 
 // Greet returns a greeting for the given name
@@ -200,7 +206,7 @@ func (a *App) ChatWithGeminiWithAttachments(prompt string, attachments []GeminiA
 }
 
 // SelfUpdate downloads and applies the latest archive from the downloads directory.
-// It expects GoReleaser archive naming: tars-copilot_<version>_<os>_<arch>.(tar.gz|zip).
+// It expects GoReleaser archive naming: domour-copilot_<version>_<os>_<arch>.(tar.gz|zip).
 func (a *App) SelfUpdate() (string, error) {
 	return a.SelfUpdateFromArchive("latest")
 }
@@ -208,10 +214,14 @@ func (a *App) SelfUpdate() (string, error) {
 // SelfUpdateFromArchive downloads and applies an update for the given version.
 // If version is empty, "latest" is used.
 func (a *App) SelfUpdateFromArchive(version string) (string, error) {
-	baseURL := "https://qtopie.space/downloads/"
+	baseURL := "https://qtopie.space/downloads/dist/"
 	finalVersion := strings.TrimSpace(version)
-	if finalVersion == "" {
-		finalVersion = "latest"
+	if finalVersion == "" || finalVersion == "latest" {
+		latest, err := fetchLatestVersionFromChecksums(baseURL, "domour-copilot")
+		if err != nil {
+			return "", err
+		}
+		finalVersion = latest
 	}
 	fileName := buildArchiveFileName(finalVersion)
 	if fileName == "" {
@@ -251,7 +261,7 @@ func (a *App) SelfUpdateFromArchive(version string) (string, error) {
 }
 
 func buildArchiveFileName(version string) string {
-	name := "tars-copilot"
+	name := "domour-copilot"
 	goos := runtime.GOOS
 	goarch := runtime.GOARCH
 	if goos == "windows" {
@@ -261,9 +271,9 @@ func buildArchiveFileName(version string) string {
 }
 
 func extractBinaryFromArchive(data []byte) ([]byte, error) {
-	expected := "tars-copilot"
+	expected := "domour-copilot"
 	if runtime.GOOS == "windows" {
-		expected = "tars-copilot.exe"
+		expected = "domour-copilot.exe"
 	}
 
 	if runtime.GOOS == "windows" {
@@ -339,10 +349,14 @@ func (a *App) InstallVlink(version string, sudoPassword string) (string, error) 
 		return "", fmt.Errorf("sudo password is required")
 	}
 
+	a.emitVlinkInstallStatus("开始安装 vlink")
+
 	binaryData, err := downloadVlinkBinary(version)
 	if err != nil {
+		a.emitVlinkInstallStatus("vlink 下载失败")
 		return "", err
 	}
+	a.emitVlinkInstallStatus("vlink 下载完成")
 
 	tmpFile, err := os.CreateTemp("", "vlink-*")
 	if err != nil {
@@ -352,27 +366,36 @@ func (a *App) InstallVlink(version string, sudoPassword string) (string, error) 
 
 	if _, err := tmpFile.Write(binaryData); err != nil {
 		_ = tmpFile.Close()
+		a.emitVlinkInstallStatus("写入临时文件失败")
 		return "", fmt.Errorf("failed to write temp file: %w", err)
 	}
 	if err := tmpFile.Close(); err != nil {
+		a.emitVlinkInstallStatus("写入临时文件失败")
 		return "", fmt.Errorf("failed to close temp file: %w", err)
 	}
 
+	a.emitVlinkInstallStatus("正在写入 /usr/local/bin/vlink（需要 sudo 授权）")
 	installCmd := exec.Command("sudo", "-S", "install", "-m", "0755", tmpFile.Name(), "/usr/local/bin/vlink")
 	installCmd.Stdin = strings.NewReader(trimmedPassword + "\n")
 	output, err := installCmd.CombinedOutput()
 	if err != nil {
+		a.emitVlinkInstallStatus("安装失败")
 		return "", fmt.Errorf("install failed: %s", strings.TrimSpace(string(output)))
 	}
 
+	a.emitVlinkInstallStatus("安装完成")
 	return "vlink installed", nil
 }
 
 func downloadVlinkBinary(version string) ([]byte, error) {
-	baseURL := "https://qtopie.space/downloads/"
+	baseURL := "https://qtopie.space/downloads/dist/"
 	finalVersion := strings.TrimSpace(version)
-	if finalVersion == "" {
-		finalVersion = "latest"
+	if finalVersion == "" || finalVersion == "latest" {
+		latest, err := fetchLatestVersionFromChecksums(baseURL, "vlink")
+		if err != nil {
+			return nil, err
+		}
+		finalVersion = latest
 	}
 	fileName := buildVlinkArchiveFileName(finalVersion)
 	if fileName == "" {
@@ -415,4 +438,118 @@ func buildVlinkArchiveFileName(version string) string {
 		return fmt.Sprintf("%s_%s_%s_%s.zip", name, version, goos, goarch)
 	}
 	return fmt.Sprintf("%s_%s_%s_%s.tar.gz", name, version, goos, goarch)
+}
+
+func fetchLatestVersionFromChecksums(baseURL string, prefix string) (string, error) {
+	url := strings.TrimRight(baseURL, "/") + "/checksums.txt"
+	client := &http.Client{Timeout: 20 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("failed to download checksums: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("checksums download failed: %s", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read checksums: %w", err)
+	}
+
+	versions := extractVersionsFromChecksums(string(body), prefix)
+	if len(versions) == 0 {
+		return "", fmt.Errorf("no versions found for %s in checksums", prefix)
+	}
+
+	latest := versions[0]
+	for _, v := range versions[1:] {
+		if compareSemver(v, latest) > 0 {
+			latest = v
+		}
+	}
+	return latest, nil
+}
+
+func extractVersionsFromChecksums(content string, prefix string) []string {
+	lines := strings.Split(content, "\n")
+	var versions []string
+	marker := prefix + "_v"
+	for _, line := range lines {
+		idx := strings.Index(line, marker)
+		if idx == -1 {
+			continue
+		}
+		chunk := line[idx+len(prefix)+1:]
+		ver := readSemverWithV(chunk)
+		if ver != "" {
+			versions = append(versions, ver)
+		}
+	}
+	return versions
+}
+
+func readSemverWithV(input string) string {
+	if !strings.HasPrefix(input, "v") {
+		return ""
+	}
+	parts := strings.SplitN(input, "_", 2)
+	ver := parts[0]
+	if isValidSemver(ver) {
+		return ver
+	}
+	return ""
+}
+
+func isValidSemver(ver string) bool {
+	if !strings.HasPrefix(ver, "v") {
+		return false
+	}
+	segments := strings.Split(ver[1:], ".")
+	if len(segments) < 2 || len(segments) > 3 {
+		return false
+	}
+	for _, seg := range segments {
+		if seg == "" {
+			return false
+		}
+		for _, ch := range seg {
+			if ch < '0' || ch > '9' {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func compareSemver(a string, b string) int {
+	parse := func(v string) []int {
+		parts := strings.Split(strings.TrimPrefix(v, "v"), ".")
+		out := []int{0, 0, 0}
+		for i := 0; i < len(parts) && i < 3; i++ {
+			var n int
+			_, _ = fmt.Sscanf(parts[i], "%d", &n)
+			out[i] = n
+		}
+		return out
+	}
+	va := parse(a)
+	vb := parse(b)
+	for i := 0; i < 3; i++ {
+		if va[i] > vb[i] {
+			return 1
+		}
+		if va[i] < vb[i] {
+			return -1
+		}
+	}
+	return 0
+}
+
+func (a *App) emitVlinkInstallStatus(message string) {
+	if a.ctx == nil {
+		return
+	}
+	wailsruntime.EventsEmit(a.ctx, "vlink:install", message)
 }
