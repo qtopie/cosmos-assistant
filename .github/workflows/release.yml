@@ -39,7 +39,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean --skip-publish
+          args: release --clean --skip=publish
         env:
           GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
 
