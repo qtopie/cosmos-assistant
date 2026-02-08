@@ -38,6 +38,10 @@ document.querySelector('#app').innerHTML = `
                 <span class="status-pill online">Cosmos-Star 在线</span>
                 <span class="status-pill">本地模式</span>
                 <span class="status-pill">低风险</span>
+                <label class="status-pill" style="cursor:pointer;user-select:none;">
+                  <input type="checkbox" id="proxyToggle" style="vertical-align:middle;margin-right:4px;">网络加速
+                </label>
+                                <span class="status-pill idle" id="vlinkStatus">加速状态：未开启</span>
             </div>
         </header>
 
@@ -133,31 +137,181 @@ const attachButton = document.getElementById('attachButton');
 const attachmentList = document.getElementById('attachmentList');
 let pendingAttachments = [];
 
+const proxyToggle = document.getElementById('proxyToggle');
+const vlinkStatus = document.getElementById('vlinkStatus');
+let vlinkStatusTimer = null;
+
+const setVlinkStatus = (state) => {
+    if (!vlinkStatus) return;
+    vlinkStatus.classList.remove('ok', 'error', 'idle');
+    if (state === 'ok') {
+        vlinkStatus.classList.add('ok');
+        vlinkStatus.textContent = '加速状态：运行中';
+    } else if (state === 'error') {
+        vlinkStatus.classList.add('error');
+        vlinkStatus.textContent = '加速状态：异常';
+    } else {
+        vlinkStatus.classList.add('idle');
+        vlinkStatus.textContent = '加速状态：未开启';
+    }
+};
+
+const checkVlinkStatus = async () => {
+    try {
+        const alive = await window.go.main.App.IsVlinkPortAlive();
+        setVlinkStatus(alive ? 'ok' : 'error');
+    } catch (error) {
+        console.error('vlink 状态检测失败:', error);
+        setVlinkStatus('error');
+    }
+};
+
+const startVlinkPolling = () => {
+    if (vlinkStatusTimer) return;
+    vlinkStatusTimer = window.setInterval(checkVlinkStatus, 2000);
+    checkVlinkStatus();
+};
+
+const stopVlinkPolling = () => {
+    if (vlinkStatusTimer) {
+        window.clearInterval(vlinkStatusTimer);
+        vlinkStatusTimer = null;
+    }
+    setVlinkStatus('idle');
+};
+if (proxyToggle) {
+    proxyToggle.addEventListener('change', async () => {
+        proxyToggle.disabled = true;
+        try {
+            if (proxyToggle.checked) {
+                const installed = await window.go.main.App.IsVlinkInstalled();
+                if (!installed) {
+                    const confirmInstall = window.confirm('未检测到 vlink，是否自动下载安装？');
+                    if (!confirmInstall) {
+                        proxyToggle.checked = false;
+                        stopVlinkPolling();
+                        return;
+                    }
+                    const sudoPassword = window.prompt('请输入 sudo 密码用于安装 vlink（不会保存）：', '');
+                    if (!sudoPassword) {
+                        proxyToggle.checked = false;
+                        stopVlinkPolling();
+                        return;
+                    }
+                    const installResult = await window.go.main.App.InstallVlink('', sudoPassword);
+                    console.log(installResult);
+                }
+                const result = await window.go.main.App.StartVlink();
+                console.log(result);
+                startVlinkPolling();
+            } else {
+                const result = await window.go.main.App.StopVlink();
+                console.log(result);
+                stopVlinkPolling();
+            }
+        } catch (error) {
+            console.error('vlink 操作失败:', error);
+            proxyToggle.checked = !proxyToggle.checked;
+            if (proxyToggle.checked) {
+                startVlinkPolling();
+            } else {
+                stopVlinkPolling();
+            }
+        } finally {
+            proxyToggle.disabled = false;
+        }
+    });
+}
+
 const renderMessage = (role, content) => {
         const message = document.createElement('div');
         message.className = `chat-message ${role}`;
         message.innerHTML = `<div class="bubble">${content}</div>`;
         chatBody.appendChild(message);
         chatBody.scrollTop = chatBody.scrollHeight;
+    return message;
+};
+
+const isLikelyTextFile = (file) => {
+    if (file.type && file.type.startsWith('text/')) return true;
+    const name = file.name.toLowerCase();
+    return (
+        name.endsWith('.txt') ||
+        name.endsWith('.md') ||
+        name.endsWith('.json') ||
+        name.endsWith('.csv') ||
+        name.endsWith('.yaml') ||
+        name.endsWith('.yml') ||
+        name.endsWith('.log')
+    );
+};
+
+const readFileAsText = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result || '');
+        reader.onerror = () => reject(reader.error || new Error('读取文件失败'));
+        reader.readAsText(file);
+    });
+
+const readFileAsBase64 = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = String(reader.result || '');
+            const base64 = result.includes(',') ? result.split(',')[1] : result;
+            resolve(base64);
+        };
+        reader.onerror = () => reject(reader.error || new Error('读取文件失败'));
+        reader.readAsDataURL(file);
+    });
+
+const prepareAttachments = async (files) => {
+    const prepared = await Promise.all(
+        files.map(async (file) => {
+            const isText = isLikelyTextFile(file);
+            const content = isText
+                ? await readFileAsText(file)
+                : await readFileAsBase64(file);
+            return {
+                name: file.name,
+                content: String(content || ''),
+                isBinary: !isText,
+            };
+        })
+    );
+    return prepared.filter((item) => item.content.trim() !== '');
 };
 
 starterMessages.forEach((message) => renderMessage(message.role, message.content));
 
-const handleSend = () => {
-        const value = chatInput.value.trim();
+const handleSend = async () => {
+    const value = chatInput.value.trim();
     if (!value && pendingAttachments.length === 0) return;
-        renderMessage('user', value);
+    renderMessage('user', value || '（仅附件）');
     if (pendingAttachments.length > 0) {
         const attachmentNames = pendingAttachments.map((file) => file.name).join(', ');
         renderMessage('assistant', `已记录附件：${attachmentNames}`);
     }
-        chatInput.value = '';
+    chatInput.value = '';
     chatInput.style.height = 'auto';
+    const filesToSend = pendingAttachments;
     pendingAttachments = [];
     attachmentList.innerHTML = '';
-        window.setTimeout(() => {
-                renderMessage('assistant', '收到，我将拆解任务并进入协同确认。');
-        }, 400);
+
+    const assistantMessage = renderMessage('assistant', '处理中…');
+    const assistantBubble = assistantMessage.querySelector('.bubble');
+    try {
+        const attachments = await prepareAttachments(filesToSend);
+        const prompt = value || '请根据附件内容进行分析。';
+        const response = attachments.length
+            ? await window.go.main.App.ChatWithGeminiWithAttachments(prompt, attachments)
+            : await window.go.main.App.ChatWithGemini(prompt);
+        assistantBubble.textContent = response || '（无返回）';
+    } catch (error) {
+        console.error('Gemini CLI 调用失败:', error);
+        assistantBubble.textContent = '调用 Gemini CLI 失败，请检查命令或环境配置。';
+    }
 };
 
 chatSend.addEventListener('click', handleSend);

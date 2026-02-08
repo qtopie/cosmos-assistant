@@ -3,6 +3,7 @@ module cosmos-assistant
 go 1.24
 
 require (
+	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/wailsapp/wails/v2 v2.10.1
 	golang.org/x/net v0.38.0
 	google.golang.org/genai v1.44.0
