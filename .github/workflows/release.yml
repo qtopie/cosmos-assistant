@@ -134,11 +134,13 @@ jobs:
           rm -f "$OUT_DIR/$TARGET_BIN"
 
       - name: Start SSH agent
+        if: runner.os != 'Windows'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add server host key
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           mkdir -p ~/.ssh
@@ -147,7 +149,20 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
 
+      - name: Deploy to server (Windows)
+        if: runner.os == 'Windows'
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avz --delete"
+          SOURCE: "dist/"
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_PORT: ${{ secrets.SSH_PORT }}
+          TARGET: ${{ secrets.SSH_PATH }}
+
       - name: Publish artifacts to server
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           rsync -avz -e "ssh -p ${SSH_PORT}" dist/ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
