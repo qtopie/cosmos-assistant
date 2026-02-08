@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -38,12 +38,6 @@ jobs:
 
       - name: Build frontend
         run: npm run build --prefix frontend
-
-      - name: Install rsync (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install rsync -y
-          echo "C:\Program Files\cwRsync\bin" >> $GITHUB_PATH
 
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
@@ -75,27 +69,7 @@ jobs:
             wails build -clean -s
           fi
 
-      - name: Package artifact (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $Version = $env:GITHUB_REF_NAME
-          $Goos = (go env GOOS)
-          $Goarch = (go env GOARCH)
-          $BinDir = "build/bin"
-          $OutDir = "dist"
-          New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
-
-          $SourceBin = Join-Path $BinDir "Domour Copilot.exe"
-          $TargetBin = Join-Path $OutDir "domour-copilot.exe"
-          Copy-Item $SourceBin $TargetBin -Force
-
-          $ZipPath = Join-Path $OutDir "domour-copilot_${Version}_${Goos}_${Goarch}.zip"
-          Compress-Archive -Path $TargetBin -DestinationPath $ZipPath -Force
-          Remove-Item $TargetBin -Force
-
       - name: Package artifact (macOS/Linux)
-        if: runner.os != 'Windows'
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME}"
@@ -133,14 +107,40 @@ jobs:
           (cd "$OUT_DIR" && tar -czf "domour-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
           rm -f "$OUT_DIR/$TARGET_BIN"
 
+      - name: Build Windows app (cross-compile on Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          wails build -clean -s -tags webkit2_41 -platform windows/amd64
+
+      - name: Package artifact (Windows cross-compile)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          GOOS="windows"
+          GOARCH="amd64"
+          BIN_DIR="build/bin"
+          OUT_DIR="dist"
+          mkdir -p "$OUT_DIR"
+
+          SOURCE_BIN="$BIN_DIR/Domour Copilot.exe"
+          if [[ ! -f "$SOURCE_BIN" ]]; then
+            echo "Error: Could not find Windows binary at $SOURCE_BIN"
+            exit 1
+          fi
+
+          TARGET_BIN="domour-copilot.exe"
+          cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
+          (cd "$OUT_DIR" && zip -q "domour-copilot_${VERSION}_${GOOS}_${GOARCH}.zip" "$TARGET_BIN")
+          rm -f "$OUT_DIR/$TARGET_BIN"
+
       - name: Start SSH agent
-        if: runner.os != 'Windows'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add server host key
-        if: runner.os != 'Windows'
         shell: bash
         run: |
           mkdir -p ~/.ssh
@@ -149,23 +149,10 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
 
-      - name: Deploy to server (Windows)
-        if: runner.os == 'Windows'
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avz --delete"
-          SOURCE: "dist/"
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USER || 'ubuntu' }}
-          REMOTE_PORT: ${{ secrets.SSH_PORT || '22' }}
-          TARGET: ${{ secrets.SSH_PATH }}
-
       - name: Publish artifacts to server
-        if: runner.os != 'Windows'
         shell: bash
         run: |
-          rsync -avz -e "ssh -p ${SSH_PORT}" dist/ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
+          scp -r -P "${SSH_PORT}" dist/ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
