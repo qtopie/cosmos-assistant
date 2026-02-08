@@ -1,12 +1,12 @@
-这份技术方案文档旨在为 **TARS** 项目提供一套基于“树形技能架构”、“隔离 WebView 渲染”以及“反馈进化机制”的深度集成方案。
+这份技术方案文档旨在为 **Domour** 项目提供一套基于“树形技能架构”、“隔离 WebView 渲染”以及“反馈进化机制”的深度集成方案。
 
 ---
 
-# TARS 项目技术方案：基于技能树与自进化 UI 的智能 Agent 平台
+# Domour 项目技术方案：基于技能树与自进化 UI 的智能 Agent 平台
 
 ## 1. 核心架构概述 (Core Architecture)
 
-TARS 的核心设计理念是将大模型的推理能力（IQ）与确定性的工程化技能（Skill）解耦。系统通过 **MCP (Model Context Protocol)** 实现底层能力的标准化，通过 **WebView 沙箱** 实现 UI 插件化，并利用 **树形结构** 组织成千上万的技能。
+Domour 的核心设计理念是将大模型的推理能力（IQ）与确定性的工程化技能（Skill）解耦。系统通过 **MCP (Model Context Protocol)** 实现底层能力的标准化，通过 **WebView 沙箱** 实现 UI 插件化，并利用 **树形结构** 组织成千上万的技能。
 
 ### 1.1 架构分层
 
@@ -19,7 +19,7 @@ TARS 的核心设计理念是将大模型的推理能力（IQ）与确定性的�
 
 ## 2. 树形技能管理系统 (Hierarchical Skill Tree)
 
-为了应对成千上万的技能，TARS 采用命名空间隔离的树形结构：`Domain.Category.Skill`。
+为了应对成千上万的技能，Domour 采用命名空间隔离的树形结构：`Domain.Category.Skill`。
 
 ### 2.1 技能定义规范 (Manifest)
 
@@ -30,7 +30,7 @@ TARS 的核心设计理念是将大模型的推理能力（IQ）与确定性的�
   "skill_id": "DevOps.K8s.PodManager",
   "description": "管理 K8s 集群中的 Pod，支持重启、日志查看及资源扩缩。",
   "mcp_tools": ["k8s_get_pods", "k8s_restart_pod"],
-  "ui_plugin": "tars-k8s-dashboard-v1",
+  "ui_plugin": "Domour-k8s-dashboard-v1",
   "knowledge_base": "vector_index_path",
   "experience": {
     "preferences": [], // 存储用户反馈的执行偏好
@@ -50,14 +50,14 @@ TARS 的核心设计理念是将大模型的推理能力（IQ）与确定性的�
 
 ## 3. WebView 隔离与插件化渲染 (Plugin Sandbox)
 
-TARS 参考 VS Code WebView 机制，解决复杂 JS 逻辑的渲染与安全问题。
+Domour 参考 VS Code WebView 机制，解决复杂 JS 逻辑的渲染与安全问题。
 
 ### 3.1 隔离沙箱设计
 
 * **容器**：使用 `<iframe>` 并配置严格的 `sandbox` 属性（禁止同源访问，允许脚本执行）。
-* **样式隔离**：内部采用 Shadow DOM，防止插件 CSS 污染 TARS 主界面。
+* **样式隔离**：内部采用 Shadow DOM，防止插件 CSS 污染 Domour 主界面。
 
-### 3.2 消息总线 (TarsBridge)
+### 3.2 消息总线 (DomourBridge)
 
 双向异步消息传递机制：
 
@@ -68,7 +68,7 @@ TARS 参考 VS Code WebView 机制，解决复杂 JS 逻辑的渲染与安全问
 
 ## 4. 进化机制：关联反馈的 Copilot 模式 (Feedback Evolution)
 
-这是 TARS 区别于通用工具的核心：**教一遍，记一生。**
+这是 Domour 区别于通用工具的核心：**教一遍，记一生。**
 
 ### 4.1 反馈捕获逻辑
 
@@ -81,7 +81,7 @@ TARS 参考 VS Code WebView 机制，解决复杂 JS 逻辑的渲染与安全问
 
 1. **收集记录**：将 `Context + Action + Correction` 存入技能节点的 Experience 库。
 2. **Prompt 注入**：下次激活该 Skill 时，将最优反馈作为“少样本学习 (Few-shot)”注入底层模型。
-3. **自主进化**：当某一分支的负面反馈过多时，TARS 自动触发“技能重构”，建议用户更新 MCP 工具或更换 UI 插件。
+3. **自主进化**：当某一分支的负面反馈过多时，Domour 自动触发“技能重构”，建议用户更新 MCP 工具或更换 UI 插件。
 
 ### 4.3 Copilot 模式与放权机制 (Human-in-the-Loop)
 

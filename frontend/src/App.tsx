@@ -38,12 +38,24 @@ const activityFeed = [
     { time: '09:40', text: '自动化清理 4 个重复任务' },
 ];
 
-const starterMessages = [
+type ChatMessage = {
+    role: 'assistant' | 'user';
+    content: string;
+    id?: string;
+};
+
+type GeminiAttachment = {
+    name: string;
+    content: string;
+    isBinary: boolean;
+};
+
+const starterMessages: ChatMessage[] = [
     { role: 'assistant', content: '早上好！我可以帮你准备今日计划。' },
     { role: 'assistant', content: '是否要打开“专注办公”场景并同步设备状态？' },
 ];
 
-const isLikelyTextFile = (file) => {
+const isLikelyTextFile = (file: File) => {
     if (file.type && file.type.startsWith('text/')) return true;
     const name = file.name.toLowerCase();
     return (
@@ -57,7 +69,7 @@ const isLikelyTextFile = (file) => {
     );
 };
 
-const readFileAsText = (file) =>
+const readFileAsText = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result || '');
@@ -65,7 +77,7 @@ const readFileAsText = (file) =>
         reader.readAsText(file);
     });
 
-const readFileAsBase64 = (file) =>
+const readFileAsBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -77,7 +89,7 @@ const readFileAsBase64 = (file) =>
         reader.readAsDataURL(file);
     });
 
-const prepareAttachments = async (files) => {
+const prepareAttachments = async (files: File[]): Promise<GeminiAttachment[]> => {
     const prepared = await Promise.all(
         files.map(async (file) => {
             const isText = isLikelyTextFile(file);
@@ -93,11 +105,11 @@ const prepareAttachments = async (files) => {
 };
 
 export default function App() {
-    const [messages, setMessages] = useState(starterMessages);
+    const [messages, setMessages] = useState<ChatMessage[]>(starterMessages);
     const [inputValue, setInputValue] = useState('');
-    const [pendingAttachments, setPendingAttachments] = useState([]);
+    const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
     const [isProxyEnabled, setIsProxyEnabled] = useState(false);
-    const [vlinkStatus, setVlinkStatus] = useState('idle');
+    const [vlinkStatus, setVlinkStatus] = useState<'idle' | 'ok' | 'error'>('idle');
     const [installViewActive, setInstallViewActive] = useState(false);
     const [installMessage, setInstallMessage] = useState('准备开始…');
 
@@ -110,11 +122,13 @@ export default function App() {
 
     const [installModalOpen, setInstallModalOpen] = useState(false);
     const [vlinkPassword, setVlinkPassword] = useState('');
-    const [installResolve, setInstallResolve] = useState(null);
+    const [installResolve, setInstallResolve] = useState<
+        ((result: { confirmed: boolean; password: string }) => void) | null
+    >(null);
 
-    const chatBodyRef = useRef(null);
-    const fileInputRef = useRef(null);
-    const vlinkTimerRef = useRef(null);
+    const chatBodyRef = useRef<HTMLDivElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const vlinkTimerRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (chatBodyRef.current) {
@@ -123,7 +137,7 @@ export default function App() {
     }, [messages]);
 
     useEffect(() => {
-        EventsOn('vlink:install', (message) => {
+        EventsOn('vlink:install', (message: string) => {
             setInstallMessage(message || '-');
             if (message && message.includes('安装完成')) {
                 window.setTimeout(() => {
@@ -191,12 +205,12 @@ export default function App() {
         }
     };
 
-    const handleAttachFiles = (files) => {
+    const handleAttachFiles = (files: File[]) => {
         if (!files || files.length === 0) return;
         setPendingAttachments((prev) => [...prev, ...files]);
     };
 
-    const removeAttachment = (index) => {
+    const removeAttachment = (index: number) => {
         setPendingAttachments((prev) => prev.filter((_, i) => i !== index));
     };
 
@@ -224,7 +238,7 @@ export default function App() {
     };
 
     const requestInstallVlink = () =>
-        new Promise((resolve) => {
+        new Promise<{ confirmed: boolean; password: string }>((resolve) => {
             setVlinkPassword('');
             setInstallModalOpen(true);
             setInstallResolve(() => resolve);
@@ -302,7 +316,7 @@ export default function App() {
         }
     };
 
-    const handleInputKeyDown = (event) => {
+    const handleInputKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             handleSend();

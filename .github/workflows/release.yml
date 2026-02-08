@@ -47,7 +47,7 @@ jobs:
             build-essential \
             pkg-config \
             libgtk-3-dev \
-            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
             libglib2.0-dev \
             libgdk-pixbuf2.0-dev \
             libpango1.0-dev \
@@ -56,8 +56,18 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.1
 
+      - name: Wails doctor (Linux)
+        if: runner.os == 'Linux'
+        run: wails doctor
+
       - name: Build app with Wails
-        run: wails build -clean -s
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            wails build -clean -s -tags webkit2_41
+          else
+            wails build -clean -s
+          fi
 
       - name: Package artifact (Windows)
         if: runner.os == 'Windows'
@@ -70,7 +80,7 @@ jobs:
           $OutDir = "dist"
           New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
-          $SourceBin = Join-Path $BinDir "domour-copilot.exe"
+          $SourceBin = Join-Path $BinDir "Domour Copilot.exe"
           $TargetBin = Join-Path $OutDir "domour-copilot.exe"
           Copy-Item $SourceBin $TargetBin -Force
 
