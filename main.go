@@ -22,6 +22,9 @@ func main() {
 	FileMenu.AddText("About", nil, func(_ *menu.CallbackData) {
 		wailsruntime.EventsEmit(app.ctx, "menu:about", nil)
 	})
+	FileMenu.AddText("Settings...", nil, func(_ *menu.CallbackData) {
+		wailsruntime.EventsEmit(app.ctx, "menu:settings", nil)
+	})
 	FileMenu.AddSeparator()
 	FileMenu.AddText("Check for Updates...", nil, func(_ *menu.CallbackData) {
 		wailsruntime.EventsEmit(app.ctx, "menu:update", nil)

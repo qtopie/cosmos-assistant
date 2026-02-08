@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -27,6 +28,15 @@ type App struct {
 	ctx      context.Context
 	vlinkMu  sync.Mutex
 	vlinkCmd *exec.Cmd
+	settingsMu sync.Mutex
+	settings   AppSettings
+}
+
+type AppSettings struct {
+	DisplayName   string `json:"displayName"`
+	AutoUpdate    bool   `json:"autoUpdate"`
+	VlinkAutoStart bool  `json:"vlinkAutoStart"`
+	Notes         string `json:"notes"`
 }
 
 // NewApp creates a new App application struct
@@ -38,6 +48,14 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	settings, err := loadSettingsFromDisk()
+	if err != nil {
+		settings = defaultSettings()
+		_ = saveSettingsToDisk(settings)
+	}
+	a.settingsMu.Lock()
+	a.settings = settings
+	a.settingsMu.Unlock()
 }
 
 // About returns app info for About dialog
@@ -48,6 +66,71 @@ func (a *App) About() string {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) GetSettings() AppSettings {
+	a.settingsMu.Lock()
+	defer a.settingsMu.Unlock()
+	return a.settings
+}
+
+func (a *App) SaveSettings(next AppSettings) (string, error) {
+	a.settingsMu.Lock()
+	a.settings = next
+	a.settingsMu.Unlock()
+
+	if err := saveSettingsToDisk(next); err != nil {
+		return "", err
+	}
+	return "settings saved", nil
+}
+
+func defaultSettings() AppSettings {
+	return AppSettings{
+		DisplayName:   "Domour Copilot",
+		AutoUpdate:    true,
+		VlinkAutoStart: false,
+		Notes:         "",
+	}
+}
+
+func settingsFilePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".domour", "cosmos-assistant.json"), nil
+}
+
+func loadSettingsFromDisk() (AppSettings, error) {
+	path, err := settingsFilePath()
+	if err != nil {
+		return AppSettings{}, err
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return AppSettings{}, err
+	}
+	var settings AppSettings
+	if err := json.Unmarshal(data, &settings); err != nil {
+		return AppSettings{}, err
+	}
+	return settings, nil
+}
+
+func saveSettingsToDisk(settings AppSettings) error {
+	path, err := settingsFilePath()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	data, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0o600)
 }
 
 // StartVlink starts the vlink process with the configured file.

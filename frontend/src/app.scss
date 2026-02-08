@@ -183,6 +183,10 @@
     height: 100%;
 }
 
+.domour-main.settings-view {
+    grid-template-columns: 1fr;
+}
+
 .dashboard {
     display: flex;
     flex-direction: column;
@@ -298,6 +302,37 @@
     display: flex;
     gap: 10px;
     margin-top: 8px;
+}
+
+.settings-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.settings-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 12px;
 }
 
 .chat {

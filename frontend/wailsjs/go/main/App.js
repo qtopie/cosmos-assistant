@@ -14,6 +14,10 @@ export function ChatWithGeminiWithAttachments(arg1, arg2) {
   return window['go']['main']['App']['ChatWithGeminiWithAttachments'](arg1, arg2);
 }
 
+export function GetSettings() {
+  return window['go']['main']['App']['GetSettings']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
@@ -28,6 +32,10 @@ export function IsVlinkInstalled() {
 
 export function IsVlinkPortAlive() {
   return window['go']['main']['App']['IsVlinkPortAlive']();
+}
+
+export function SaveSettings(arg1) {
+  return window['go']['main']['App']['SaveSettings'](arg1);
 }
 
 export function SelfUpdate() {

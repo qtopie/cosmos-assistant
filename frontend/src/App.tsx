@@ -3,12 +3,8 @@ import {
     FluentProvider,
     webDarkTheme,
     Button,
-    Card,
-    Text,
-    Subtitle1,
     Caption1,
     Body1,
-    Textarea,
     Input,
     Dialog,
     DialogSurface,
@@ -21,6 +17,15 @@ import {
     Spinner,
 } from '@fluentui/react-components';
 import { EventsOn } from '../wailsjs/runtime/runtime';
+import Dashboard from './pages/Dashboard';
+import { ChatMessage } from './components/ChatPanel';
+import Settings, { AppSettings } from './pages/Settings';
+
+type GeminiAttachment = {
+    name: string;
+    content: string;
+    isBinary: boolean;
+};
 
 const metrics = [
     { label: '活跃技能', value: '32', trend: '+6%' },
@@ -37,18 +42,6 @@ const activityFeed = [
     { time: '09:34', text: '生成销售看板草稿，待确认' },
     { time: '09:40', text: '自动化清理 4 个重复任务' },
 ];
-
-type ChatMessage = {
-    role: 'assistant' | 'user';
-    content: string;
-    id?: string;
-};
-
-type GeminiAttachment = {
-    name: string;
-    content: string;
-    isBinary: boolean;
-};
 
 const starterMessages: ChatMessage[] = [
     { role: 'assistant', content: '早上好！我可以帮你准备今日计划。' },
@@ -126,6 +119,17 @@ export default function App() {
         ((result: { confirmed: boolean; password: string }) => void) | null
     >(null);
 
+    const [activeView, setActiveView] = useState<'home' | 'settings'>('home');
+    const [settingsDraft, setSettingsDraft] = useState<AppSettings | null>(null);
+    const [settingsError, setSettingsError] = useState('');
+
+    const fallbackSettings: AppSettings = {
+        displayName: 'Domour Copilot',
+        autoUpdate: true,
+        vlinkAutoStart: false,
+        notes: '',
+    };
+
     const chatBodyRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const vlinkTimerRef = useRef<number | null>(null);
@@ -135,6 +139,15 @@ export default function App() {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
         }
     }, [messages]);
+
+    const loadSettings = async () => {
+        try {
+            const current = await window.go.main.App.GetSettings();
+            setSettingsDraft(current);
+        } catch {
+            setSettingsError('设置加载失败');
+        }
+    };
 
     useEffect(() => {
         EventsOn('vlink:install', (message: string) => {
@@ -161,6 +174,14 @@ export default function App() {
             setUpdateInProgress(false);
             setUpdateOpen(true);
         });
+
+        EventsOn('menu:settings', async () => {
+            setSettingsError('');
+            await loadSettings();
+            setActiveView('settings');
+        });
+
+        loadSettings();
     }, []);
 
     const handleNewSession = () => {
@@ -316,6 +337,20 @@ export default function App() {
         }
     };
 
+    const handleSettingsSave = async () => {
+        if (!settingsDraft) return;
+        setSettingsError('');
+        try {
+            await window.go.main.App.SaveSettings(settingsDraft);
+        } catch {
+            setSettingsError('设置保存失败');
+        }
+    };
+
+    const updateSettingsDraft = (updater: (prev: AppSettings) => AppSettings) => {
+        setSettingsDraft((prev) => updater(prev ?? fallbackSettings));
+    };
+
     const handleInputKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -346,125 +381,33 @@ export default function App() {
                     </div>
                 </header>
 
-                <main className="domour-main">
-                    <section className="dashboard">
-                        <div className="section-header">
-                            <Subtitle1>Dashboard</Subtitle1>
-                            <Button appearance="secondary">查看全局</Button>
-                        </div>
-                        <div className="metric-grid" id="metricGrid">
-                            {metrics.map((item) => (
-                                <Card className="metric-card" key={item.label}>
-                                    <Text weight="semibold">{item.label}</Text>
-                                    <Text size={600}>{item.value}</Text>
-                                    <Caption1>{item.trend}</Caption1>
-                                </Card>
-                            ))}
-                        </div>
-
-                        <div className="dashboard-row">
-                            <Card className="panel">
-                                <div className="panel-title">快捷操作</div>
-                                <div className="chip-grid" id="quickActions">
-                                    {quickActions.map((action) => (
-                                        <Button key={action} appearance="outline" size="small">
-                                            {action}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </Card>
-                            <Card className="panel">
-                                <div className="panel-title">实时动态</div>
-                                <ul className="activity" id="activityFeed">
-                                    {activityFeed.map((item) => (
-                                        <li key={`${item.time}-${item.text}`}>
-                                            <span className="time">{item.time}</span>
-                                            <span className="text">{item.text}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </Card>
-                        </div>
-
-                        <Card className="panel insight">
-                            <div className="panel-title">协同建议</div>
-                            <Body1>今日存在 3 个高风险步骤待确认。建议优先审阅“商业报表”生成链路。</Body1>
-                            <div className="insight-actions">
-                                <Button appearance="primary">进入审阅</Button>
-                                <Button appearance="secondary">稍后提醒</Button>
-                            </div>
-                        </Card>
-                    </section>
-
-                    <aside className="chat">
-                        <div className="chat-header">
-                            <div>
-                                <div className="panel-title">Copilot 对话</div>
-                                <div className="muted">人机协同 · 可控执行</div>
-                            </div>
-                            <Button appearance="secondary" size="small" onClick={handleNewSession}>
-                                新建会话
-                            </Button>
-                        </div>
-                        <div className="chat-body" id="chatBody" ref={chatBodyRef}>
-                            {messages.map((msg, index) => (
-                                <div className={`chat-message ${msg.role}`} key={`${msg.role}-${index}`}>
-                                    <div className="bubble">{msg.content}</div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="chat-input">
-                            <div className="chat-compose">
-                                <div className="chat-compose-field">
-                                    <Textarea
-                                        value={inputValue}
-                                        onChange={(event) => setInputValue(event.target.value)}
-                                        onKeyDown={handleInputKeyDown}
-                                        placeholder="输入任务或问题…"
-                                        resize="vertical"
-                                    />
-                                    {pendingAttachments.length > 0 && (
-                                        <div id="attachmentList" className="chat-attachments">
-                                            {pendingAttachments.map((file, index) => (
-                                                <button
-                                                    key={`${file.name}-${index}`}
-                                                    type="button"
-                                                    className="chat-attachment"
-                                                    onClick={() => removeAttachment(index)}
-                                                >
-                                                    {file.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="chat-actions">
-                                    <input
-                                        ref={fileInputRef}
-                                        id="fileInput"
-                                        type="file"
-                                        multiple
-                                        hidden
-                                        onChange={(event) => {
-                                            const files = Array.from(event.target.files || []);
-                                            handleAttachFiles(files);
-                                            event.target.value = '';
-                                        }}
-                                    />
-                                    <Button
-                                        appearance="secondary"
-                                        size="small"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        + 附件
-                                    </Button>
-                                    <Button appearance="primary" onClick={handleSend}>
-                                        发送
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
+                <main className={`domour-main ${activeView === 'settings' ? 'settings-view' : ''}`}>
+                    {activeView === 'settings' ? (
+                        <Settings
+                            settings={settingsDraft ?? fallbackSettings}
+                            error={settingsError}
+                            onBack={() => setActiveView('home')}
+                            onSave={handleSettingsSave}
+                            onUpdate={updateSettingsDraft}
+                        />
+                    ) : (
+                        <Dashboard
+                            metrics={metrics}
+                            quickActions={quickActions}
+                            activityFeed={activityFeed}
+                            messages={messages}
+                            onNewSession={handleNewSession}
+                            inputValue={inputValue}
+                            onInputChange={setInputValue}
+                            onInputKeyDown={handleInputKeyDown}
+                            onSend={handleSend}
+                            pendingAttachments={pendingAttachments}
+                            onAttachFiles={handleAttachFiles}
+                            onRemoveAttachment={removeAttachment}
+                            fileInputRef={fileInputRef}
+                            chatBodyRef={chatBodyRef}
+                        />
+                    )}
                 </main>
             </div>
 
@@ -563,6 +506,7 @@ export default function App() {
                     </DialogBody>
                 </DialogSurface>
             </Dialog>
+
         </FluentProvider>
     );
 }

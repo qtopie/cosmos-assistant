@@ -8,6 +8,8 @@ export function ChatWithGemini(arg1:string):Promise<string>;
 
 export function ChatWithGeminiWithAttachments(arg1:string,arg2:Array<main.GeminiAttachment>):Promise<string>;
 
+export function GetSettings():Promise<main.AppSettings>;
+
 export function Greet(arg1:string):Promise<string>;
 
 export function InstallVlink(arg1:string,arg2:string):Promise<string>;
@@ -15,6 +17,8 @@ export function InstallVlink(arg1:string,arg2:string):Promise<string>;
 export function IsVlinkInstalled():Promise<boolean>;
 
 export function IsVlinkPortAlive():Promise<boolean>;
+
+export function SaveSettings(arg1:main.AppSettings):Promise<string>;
 
 export function SelfUpdate():Promise<string>;
 
