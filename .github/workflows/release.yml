@@ -135,6 +135,25 @@ jobs:
           (cd "$OUT_DIR" && zip -q "domour-copilot_${VERSION}_${GOOS}_${GOARCH}.zip" "$TARGET_BIN")
           rm -f "$OUT_DIR/$TARGET_BIN"
 
+      - name: Generate checksums
+        shell: bash
+        run: |
+          if [[ -z "$(ls -A dist 2>/dev/null)" ]]; then
+            echo "Error: dist directory is empty"
+            exit 1
+          fi
+          if [[ "${RUNNER_OS}" == "Darwin" ]]; then
+            shasum -a 256 dist/* > dist/checksums.txt
+          else
+            sha256sum dist/* > dist/checksums.txt
+          fi
+
+      - name: Show checksums
+        shell: bash
+        run: |
+          echo "checksums.txt contents:"
+          cat dist/checksums.txt
+
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
