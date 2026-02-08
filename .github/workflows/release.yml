@@ -157,8 +157,8 @@ jobs:
           ARGS: "-avz --delete"
           SOURCE: "dist/"
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_PORT: ${{ secrets.SSH_PORT }}
+          REMOTE_USER: ${{ secrets.SSH_USER || 'ubuntu' }}
+          REMOTE_PORT: ${{ secrets.SSH_PORT || '22' }}
           TARGET: ${{ secrets.SSH_PATH }}
 
       - name: Publish artifacts to server
