@@ -11,7 +11,11 @@ permissions:
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,13 +39,42 @@ jobs:
       - name: Build frontend
         run: npm run build --prefix frontend
 
-      - name: Run GoReleaser (build only)
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: latest
-          args: release --clean --skip=publish
-        env:
-          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Build app with Wails
+        run: wails build -clean -s
+
+      - name: Package artifact
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          GOOS="$(go env GOOS)"
+          GOARCH="$(go env GOARCH)"
+          APP_NAME="TARS Copilot"
+          BIN_DIR="build/bin"
+          OUT_DIR="dist"
+          mkdir -p "$OUT_DIR"
+
+          if [[ "$GOOS" == "windows" ]]; then
+            SOURCE_BIN="$BIN_DIR/${APP_NAME}.exe"
+            TARGET_BIN="tars-copilot.exe"
+            cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
+            (cd "$OUT_DIR" && zip -9 "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.zip" "$TARGET_BIN")
+            rm -f "$OUT_DIR/$TARGET_BIN"
+          elif [[ "$GOOS" == "darwin" ]]; then
+            SOURCE_BIN="$BIN_DIR/${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
+            TARGET_BIN="tars-copilot"
+            cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
+            (cd "$OUT_DIR" && tar -czf "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
+            rm -f "$OUT_DIR/$TARGET_BIN"
+          else
+            SOURCE_BIN="$BIN_DIR/${APP_NAME}"
+            TARGET_BIN="tars-copilot"
+            cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
+            (cd "$OUT_DIR" && tar -czf "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
+            rm -f "$OUT_DIR/$TARGET_BIN"
+          fi
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
