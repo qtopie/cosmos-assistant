@@ -39,6 +39,11 @@ jobs:
       - name: Build frontend
         run: npm run build --prefix frontend
 
+      - name: Install rsync (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: choco install rsync
+
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
         run: |
@@ -95,7 +100,9 @@ jobs:
           VERSION="${GITHUB_REF_NAME}"
           GOOS="$(go env GOOS)"
           GOARCH="$(go env GOARCH)"
-          APP_NAME="Domour Copilot"
+          # APP_NAME is the internal 'name' from wails.json, used for macOS binary inside bundle
+          APP_NAME="domour-copilot"
+          # APP_BUNDLE and APP_BIN are the 'outputfilename' from wails.json
           APP_BUNDLE="Domour Copilot.app"
           APP_BIN="Domour Copilot"
           BIN_DIR="build/bin"
@@ -104,6 +111,10 @@ jobs:
 
           if [[ "$GOOS" == "darwin" ]]; then
             SOURCE_BIN="$BIN_DIR/${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+            # If the binary with internal name doesn't exist, try the output name
+            if [[ ! -f "$SOURCE_BIN" ]]; then
+                SOURCE_BIN="$BIN_DIR/${APP_BUNDLE}/Contents/MacOS/${APP_BIN}"
+            fi
           else
             SOURCE_BIN="$BIN_DIR/${APP_BIN}"
           fi
