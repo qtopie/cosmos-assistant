@@ -39,42 +39,70 @@ jobs:
       - name: Build frontend
         run: npm run build --prefix frontend
 
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libgtk-3-dev \
+            libwebkit2gtk-4.0-dev \
+            libglib2.0-dev \
+            libgdk-pixbuf2.0-dev \
+            libpango1.0-dev \
+            libatk1.0-dev \
+            libgdk3.0-cil-dev || true
+
       - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.1
 
       - name: Build app with Wails
         run: wails build -clean -s
 
-      - name: Package artifact
+      - name: Package artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $Version = $env:GITHUB_REF_NAME
+          $Goos = (go env GOOS)
+          $Goarch = (go env GOARCH)
+          $BinDir = "build/bin"
+          $OutDir = "dist"
+          New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+
+          $SourceBin = Join-Path $BinDir "tars-copilot.exe"
+          $TargetBin = Join-Path $OutDir "tars-copilot.exe"
+          Copy-Item $SourceBin $TargetBin -Force
+
+          $ZipPath = Join-Path $OutDir "tars-copilot_${Version}_${Goos}_${Goarch}.zip"
+          Compress-Archive -Path $TargetBin -DestinationPath $ZipPath -Force
+          Remove-Item $TargetBin -Force
+
+      - name: Package artifact (macOS/Linux)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME}"
           GOOS="$(go env GOOS)"
           GOARCH="$(go env GOARCH)"
           APP_NAME="TARS Copilot"
+          APP_BUNDLE="tars-copilot.app"
+          APP_BIN="tars-copilot"
           BIN_DIR="build/bin"
           OUT_DIR="dist"
           mkdir -p "$OUT_DIR"
 
-          if [[ "$GOOS" == "windows" ]]; then
-            SOURCE_BIN="$BIN_DIR/${APP_NAME}.exe"
-            TARGET_BIN="tars-copilot.exe"
-            cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
-            (cd "$OUT_DIR" && zip -9 "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.zip" "$TARGET_BIN")
-            rm -f "$OUT_DIR/$TARGET_BIN"
-          elif [[ "$GOOS" == "darwin" ]]; then
-            SOURCE_BIN="$BIN_DIR/${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
-            TARGET_BIN="tars-copilot"
-            cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
-            (cd "$OUT_DIR" && tar -czf "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
-            rm -f "$OUT_DIR/$TARGET_BIN"
+          if [[ "$GOOS" == "darwin" ]]; then
+            SOURCE_BIN="$BIN_DIR/${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
           else
-            SOURCE_BIN="$BIN_DIR/${APP_NAME}"
-            TARGET_BIN="tars-copilot"
-            cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
-            (cd "$OUT_DIR" && tar -czf "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
-            rm -f "$OUT_DIR/$TARGET_BIN"
+            SOURCE_BIN="$BIN_DIR/${APP_BIN}"
           fi
+
+          TARGET_BIN="tars-copilot"
+          cp "$SOURCE_BIN" "$OUT_DIR/$TARGET_BIN"
+          (cd "$OUT_DIR" && tar -czf "tars-copilot_${VERSION}_${GOOS}_${GOARCH}.tar.gz" "$TARGET_BIN")
+          rm -f "$OUT_DIR/$TARGET_BIN"
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
