@@ -41,8 +41,9 @@ jobs:
 
       - name: Install rsync (Windows)
         if: runner.os == 'Windows'
-        shell: bash
-        run: choco install rsync
+        run: |
+          choco install rsync -y
+          echo "C:\Program Files\cwRsync\bin" >> $GITHUB_PATH
 
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
@@ -110,10 +111,11 @@ jobs:
           mkdir -p "$OUT_DIR"
 
           if [[ "$GOOS" == "darwin" ]]; then
-            SOURCE_BIN="$BIN_DIR/${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
-            # If the binary with internal name doesn't exist, try the output name
-            if [[ ! -f "$SOURCE_BIN" ]]; then
-                SOURCE_BIN="$BIN_DIR/${APP_BUNDLE}/Contents/MacOS/${APP_BIN}"
+            # Find the binary inside the .app bundle
+            SOURCE_BIN=$(find "$BIN_DIR/$APP_BUNDLE/Contents/MacOS" -type f | head -n 1)
+            if [[ -z "$SOURCE_BIN" ]]; then
+              echo "Error: Could not find binary in $APP_BUNDLE"
+              exit 1
             fi
           else
             SOURCE_BIN="$BIN_DIR/${APP_BIN}"
