@@ -51,8 +51,7 @@ jobs:
             libglib2.0-dev \
             libgdk-pixbuf2.0-dev \
             libpango1.0-dev \
-            libatk1.0-dev \
-            libgdk3.0-cil-dev || true
+            libatk1.0-dev
 
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.1
