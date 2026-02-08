@@ -54,13 +54,13 @@ jobs:
           ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT | '22' }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
 
       - name: Publish artifacts to server
         run: |
           rsync -avz -e "ssh -p ${SSH_PORT}" dist/ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT | '22' }}
-          SSH_USER: ${{ secrets.SSH_USER | 'ubuntu' }}
-          SSH_PATH: ${{ secrets.SSH_PATH | '/var/www/html/qtopie.space/downloads/' }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: ${{ secrets.SSH_USER || 'ubuntu' }}
+          SSH_PATH: ${{ secrets.SSH_PATH || '/var/www/html/qtopie.space/downloads/' }}
