@@ -103,16 +103,23 @@ jobs:
           GOARCH="$(go env GOARCH)"
           # APP_NAME is the internal 'name' from wails.json, used for macOS binary inside bundle
           APP_NAME="domour-copilot"
-          # APP_BUNDLE and APP_BIN are the 'outputfilename' from wails.json
-          APP_BUNDLE="Domour Copilot.app"
+          # APP_BUNDLE and APP_BIN are based on the Wails output; discover the .app on macOS.
+          APP_BUNDLE=""
           APP_BIN="Domour Copilot"
           BIN_DIR="build/bin"
           OUT_DIR="dist"
           mkdir -p "$OUT_DIR"
 
           if [[ "$GOOS" == "darwin" ]]; then
+            # Find the .app bundle produced by Wails (name can differ by config)
+            APP_BUNDLE=$(find "$BIN_DIR" -maxdepth 1 -type d -name "*.app" | head -n 1)
+            if [[ -z "$APP_BUNDLE" ]]; then
+              echo "Error: Could not find .app bundle in $BIN_DIR"
+              exit 1
+            fi
+
             # Find the binary inside the .app bundle
-            SOURCE_BIN=$(find "$BIN_DIR/$APP_BUNDLE/Contents/MacOS" -type f | head -n 1)
+            SOURCE_BIN=$(find "$APP_BUNDLE/Contents/MacOS" -type f | head -n 1)
             if [[ -z "$SOURCE_BIN" ]]; then
               echo "Error: Could not find binary in $APP_BUNDLE"
               exit 1
