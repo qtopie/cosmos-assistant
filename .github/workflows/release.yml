@@ -171,7 +171,7 @@ jobs:
       - name: Publish artifacts to server
         shell: bash
         run: |
-          scp -r -P "${SSH_PORT}" dist/ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
+          scp -r -P "${SSH_PORT}" dist/* "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
