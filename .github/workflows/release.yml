@@ -143,9 +143,9 @@ jobs:
             exit 1
           fi
           if [[ "${RUNNER_OS}" == "Darwin" ]]; then
-            shasum -a 256 dist/* > dist/checksums.txt
+            shasum -a 256 dist/* >> dist/checksums.txt
           else
-            sha256sum dist/* > dist/checksums.txt
+            sha256sum dist/* >> dist/checksums.txt
           fi
 
       - name: Show checksums
