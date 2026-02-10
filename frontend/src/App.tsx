@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     FluentProvider,
     webDarkTheme,
+    webLightTheme,
     Button,
     Caption1,
     Body1,
@@ -181,6 +182,11 @@ export default function App() {
     const [updateInProgress, setUpdateInProgress] = useState(false);
     const [updateResult, setUpdateResult] = useState('');
 
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return true;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
     const [installModalOpen, setInstallModalOpen] = useState(false);
     const [vlinkPassword, setVlinkPassword] = useState('');
     const [installResolve, setInstallResolve] = useState<
@@ -224,6 +230,30 @@ export default function App() {
             setSettingsError('设置加载失败');
         }
     };
+
+    useEffect(() => {
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (event: MediaQueryListEvent) => setIsDarkMode(event.matches);
+
+        setIsDarkMode(media.matches);
+        if (media.addEventListener) {
+            media.addEventListener('change', handleChange);
+        } else {
+            media.addListener(handleChange);
+        }
+
+        return () => {
+            if (media.addEventListener) {
+                media.removeEventListener('change', handleChange);
+            } else {
+                media.removeListener(handleChange);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    }, [isDarkMode]);
 
     useEffect(() => {
         EventsOn('vlink:install', (message: string) => {
@@ -455,7 +485,7 @@ export default function App() {
     };
 
     return (
-        <FluentProvider theme={webDarkTheme}>
+        <FluentProvider theme={isDarkMode ? webDarkTheme : webLightTheme}>
             <div className="domour-shell" id="mainView">
                 {!isSubpage && (
                     <header className="domour-header">

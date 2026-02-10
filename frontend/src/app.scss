@@ -17,12 +17,12 @@
 .domour-title {
     font-size: 24px;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .domour-subtitle {
     font-size: 14px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 6px;
 }
 
@@ -45,7 +45,7 @@
 .subpage-title {
     font-size: 16px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-secondary);
 }
 
 .status-dot {
@@ -54,21 +54,21 @@
     height: 8px;
     border-radius: 50%;
     margin-left: 8px;
-    background-color: #94a3b8; /* default gray */
+    background-color: var(--status-idle);
 }
 
 .status-dot.ok {
-    background-color: #22c55e; /* green */
-    box-shadow: 0 0 4px #22c55e;
+    background-color: var(--status-ok);
+    box-shadow: 0 0 4px var(--status-ok-glow);
 }
 
 .status-dot.error {
-    background-color: #ef4444; /* red */
-    box-shadow: 0 0 4px #ef4444;
+    background-color: var(--status-error);
+    box-shadow: 0 0 4px var(--status-error-glow);
 }
 
 .status-dot.idle {
-    background-color: #64748b; /* gray */
+    background-color: var(--status-idle);
 }
 
 .status-pill {
@@ -76,7 +76,7 @@
     border-radius: 999px;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.7);
+    background: var(--overlay);
     display: none;
     align-items: center;
     justify-content: center;
@@ -88,23 +88,23 @@
 }
 
 .modal {
-    background: #0f172a;
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-modal);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 20px 22px;
     width: min(420px, 90vw);
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.5);
+    box-shadow: 0 20px 50px var(--shadow-5);
 }
 
 .modal-title {
     font-size: 16px;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
     margin-bottom: 12px;
 }
 
 .modal-body {
-    color: #cbd5f5;
+    color: var(--text-tertiary);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -113,14 +113,14 @@
     display: block;
     margin-top: 12px;
     margin-bottom: 6px;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
 .modal-hint {
     margin-top: 6px;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .modal-actions {
@@ -134,16 +134,16 @@
     width: 100%;
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: rgba(15, 23, 42, 0.6);
-    color: #e2e8f0;
+    border: 1px solid var(--border);
+    background: var(--surface-input);
+    color: var(--text-secondary);
     font-size: 13px;
     outline: none;
 }
 
 .text-input:focus {
-    border-color: rgba(56, 189, 248, 0.8);
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    border-color: var(--accent-focus);
+    box-shadow: 0 0 0 2px var(--accent-focus-shadow);
 }
 
 .hidden {
@@ -153,7 +153,7 @@
 .install-shell {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at top left, #1e293b, #0f172a 55%);
+    background: radial-gradient(circle at top left, var(--bg-gradient-start), var(--bg-gradient-end) 55%);
     display: none;
     align-items: center;
     justify-content: center;
@@ -165,31 +165,31 @@
 }
 
 .install-card {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     border-radius: 18px;
     padding: 28px 30px;
     width: min(520px, 90vw);
     text-align: center;
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.5);
+    box-shadow: 0 20px 50px var(--shadow-5);
 }
 
 .install-title {
     font-size: 20px;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .install-subtitle {
     margin-top: 8px;
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .install-progress {
     margin-top: 18px;
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--text-secondary);
 }
 
 .domour-main {
@@ -240,29 +240,29 @@
 }
 
 .metric-card {
-    background: rgba(30, 41, 59, 0.65);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-card);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 16px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+    box-shadow: 0 10px 30px var(--shadow-3);
 }
 
 .metric-label {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .metric-value {
     font-size: 24px;
     margin-top: 8px;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--text-primary);
 }
 
 .metric-trend {
     margin-top: 8px;
     font-size: 12px;
-    color: #38bdf8;
+    color: var(--accent);
 }
 
 .dashboard-row {
@@ -272,8 +272,8 @@
 }
 
 .panel {
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 18px;
     display: flex;
@@ -290,7 +290,7 @@
 
 .panel-title {
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .chip-grid {
@@ -300,9 +300,9 @@
 }
 
 .chip {
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    background: rgba(30, 41, 59, 0.55);
-    color: #e2e8f0;
+    border: 1px solid var(--border);
+    background: var(--surface-chip);
+    color: var(--text-secondary);
     padding: 6px 12px;
     border-radius: 999px;
     font-size: 12px;
@@ -322,16 +322,16 @@
     display: flex;
     gap: 10px;
     font-size: 13px;
-    color: #cbd5f5;
+    color: var(--text-tertiary);
 }
 
 .activity .time {
-    color: #94a3b8;
+    color: var(--text-muted);
     min-width: 44px;
 }
 
 .insight {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+    background: linear-gradient(135deg, var(--surface-card), var(--surface-panel));
 }
 
 .insight-actions {
@@ -357,8 +357,8 @@
     gap: 12px;
     padding: 10px 12px;
     border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(30, 41, 59, 0.55);
+    border: 1px solid var(--border-soft);
+    background: var(--surface-chip);
 }
 
 .todo-main {
@@ -370,12 +370,12 @@
 .todo-title {
     font-size: 14px;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .todo-meta {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
@@ -383,25 +383,25 @@
     font-size: 11px;
     padding: 4px 10px;
     border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    color: #e2e8f0;
-    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    background: var(--surface-tag);
     white-space: nowrap;
 }
 
 .todo-tag.todo {
-    border-color: rgba(56, 189, 248, 0.6);
-    color: #bae6fd;
+    border-color: var(--accent-soft-strong);
+    color: var(--accent-text);
 }
 
 .todo-tag.doing {
-    border-color: rgba(245, 158, 11, 0.6);
-    color: #fef3c7;
+    border-color: var(--warning-strong);
+    color: var(--warning-text);
 }
 
 .todo-tag.done {
-    border-color: rgba(34, 197, 94, 0.6);
-    color: #bbf7d0;
+    border-color: var(--success-strong);
+    color: var(--success-text);
 }
 
 .board-page {
@@ -421,7 +421,7 @@
 .board-title {
     font-size: 20px;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .board-actions {
@@ -435,8 +435,8 @@
     gap: 8px;
     padding: 6px;
     border-radius: 12px;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-tag);
+    border: 1px solid var(--border-soft);
 }
 
 .kanban-board {
@@ -446,8 +446,8 @@
 }
 
 .kanban-column {
-    background: rgba(15, 23, 42, 0.55);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 14px;
     display: flex;
@@ -460,26 +460,26 @@
     align-items: center;
     justify-content: space-between;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-secondary);
 }
 
 .kanban-title.todo {
-    color: #bae6fd;
+    color: var(--accent-text);
 }
 
 .kanban-title.doing {
-    color: #fde68a;
+    color: var(--warning-text);
 }
 
 .kanban-title.done {
-    color: #bbf7d0;
+    color: var(--success-text);
 }
 
 .kanban-count {
     font-size: 12px;
     padding: 2px 8px;
     border-radius: 999px;
-    background: rgba(148, 163, 184, 0.2);
+    background: var(--info-strong);
 }
 
 .kanban-cards {
@@ -491,8 +491,8 @@
 .kanban-card {
     padding: 12px;
     border-radius: 14px;
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-soft);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -500,19 +500,19 @@
 
 .kanban-card-title {
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .kanban-card-meta {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .gantt-board {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 16px;
     display: flex;
@@ -528,36 +528,36 @@
 }
 
 .gantt-cell {
-    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-    border-right: 1px solid rgba(148, 163, 184, 0.12);
+    border-bottom: 1px solid var(--border-faint);
+    border-right: 1px solid var(--border-faint);
     min-height: 46px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .gantt-header .gantt-cell {
-    border-top: 1px solid rgba(148, 163, 184, 0.12);
-    background: rgba(30, 41, 59, 0.4);
+    border-top: 1px solid var(--border-faint);
+    background: var(--surface-header);
 }
 
 .gantt-label {
     justify-content: flex-start;
     padding: 0 12px;
-    color: #e2e8f0;
+    color: var(--text-secondary);
     font-weight: 600;
 }
 
 .gantt-day-name {
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-secondary);
 }
 
 .gantt-day-date {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
@@ -574,12 +574,12 @@
 .gantt-item-title {
     font-size: 13px;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .gantt-item-meta {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 2px;
 }
 
@@ -592,20 +592,20 @@
     align-items: center;
     justify-content: center;
     font-size: 11px;
-    color: #0f172a;
+    color: var(--text-on-accent);
     font-weight: 600;
-    background: #38bdf8;
-    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.3);
+    background: var(--accent);
+    box-shadow: 0 6px 16px var(--accent-glow);
 }
 
 .gantt-bar.doing {
-    background: #f59e0b;
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+    background: var(--warning);
+    box-shadow: 0 6px 16px var(--warning-soft);
 }
 
 .gantt-bar.done {
-    background: #22c55e;
-    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+    background: var(--success);
+    box-shadow: 0 6px 16px var(--success-soft);
 }
 
 .calendar-board {
@@ -616,8 +616,8 @@
 
 .calendar-cell {
     border-radius: 16px;
-    background: rgba(15, 23, 42, 0.55);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -630,7 +630,7 @@
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .calendar-items {
@@ -642,39 +642,39 @@
 .calendar-item {
     padding: 8px 10px;
     border-radius: 12px;
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-soft);
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
 .calendar-item.todo {
-    border-color: rgba(56, 189, 248, 0.4);
+    border-color: var(--accent-soft-strong);
 }
 
 .calendar-item.doing {
-    border-color: rgba(245, 158, 11, 0.4);
+    border-color: var(--warning-soft);
 }
 
 .calendar-item.done {
-    border-color: rgba(34, 197, 94, 0.4);
+    border-color: var(--success-soft);
 }
 
 .calendar-title {
     font-size: 12px;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .calendar-tag {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .calendar-empty {
     font-size: 12px;
-    color: #64748b;
+    color: var(--text-faint);
 }
 
 .settings-page {
@@ -710,8 +710,8 @@
 }
 
 .pomodoro-card {
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     border-radius: 18px;
     padding: 24px;
     display: flex;
@@ -726,8 +726,8 @@
     gap: 10px;
     padding: 8px;
     border-radius: 12px;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-tag);
+    border: 1px solid var(--border-soft);
 }
 
 .pomodoro-timer {
@@ -745,21 +745,21 @@
     align-items: center;
     justify-content: center;
     background:
-        conic-gradient(#38bdf8 calc(var(--progress) * 1turn), rgba(148, 163, 184, 0.15) 0),
-        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.9) 58%, transparent 59%);
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
+        conic-gradient(var(--accent) calc(var(--progress) * 1turn), var(--info-faint) 0),
+        radial-gradient(circle at 50% 50%, var(--surface-ring) 58%, transparent 59%);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 18px 40px var(--shadow-4);
 }
 
 .pomodoro-time {
     font-size: 40px;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .pomodoro-sub {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .pomodoro-footer {
@@ -770,8 +770,8 @@
 }
 
 .pomodoro-stat {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-soft);
     border-radius: 14px;
     padding: 14px 16px;
     text-align: center;
@@ -780,12 +780,12 @@
 .stat-value {
     font-size: 18px;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .stat-label {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 6px;
 }
 
@@ -809,8 +809,8 @@
 }
 
 .editor-panel {
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--surface-panel);
+    border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 18px;
     display: flex;
@@ -823,9 +823,9 @@
     flex: 1;
     min-height: 320px;
     border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    background: rgba(15, 23, 42, 0.5);
-    color: #e2e8f0;
+    border: 1px solid var(--border);
+    background: var(--surface-input);
+    color: var(--text-secondary);
     padding: 12px;
 }
 
@@ -833,8 +833,8 @@
     flex: 1;
     overflow: auto;
     border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(8, 12, 20, 0.6);
+    border: 1px solid var(--border-soft);
+    background: var(--surface-preview);
     padding: 14px 16px;
 }
 
@@ -842,12 +842,12 @@
 .markdown-body h2,
 .markdown-body h3 {
     margin: 0 0 12px;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .markdown-body p,
 .markdown-body li {
-    color: #cbd5f5;
+    color: var(--text-tertiary);
     line-height: 1.6;
 }
 
@@ -857,18 +857,18 @@
 }
 
 .markdown-body code {
-    background: rgba(56, 189, 248, 0.15);
+    background: var(--accent-faint);
     padding: 2px 6px;
     border-radius: 6px;
-    color: #bae6fd;
+    color: var(--accent-text);
 }
 
 .markdown-body blockquote {
     margin: 12px 0;
     padding: 8px 12px;
-    border-left: 3px solid rgba(56, 189, 248, 0.6);
-    background: rgba(56, 189, 248, 0.08);
-    color: #bae6fd;
+    border-left: 3px solid var(--accent-soft-strong);
+    background: var(--accent-ultra-faint);
+    color: var(--accent-text);
 }
 
 .settings-header {
@@ -900,13 +900,13 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    background: rgba(12, 18, 30, 0.78);
-    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: var(--surface-chat);
+    border: 1px solid var(--border-soft);
     border-radius: 18px;
     padding: 18px;
     height: 100%;
     box-sizing: border-box;
-    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.35);
+    box-shadow: 0 14px 32px var(--shadow-4);
 }
 
 .chat-header {
@@ -914,7 +914,7 @@
     justify-content: space-between;
     align-items: center;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    border-bottom: 1px solid var(--border-faint);
 }
 
 .chat-body {
@@ -925,8 +925,8 @@
     gap: 12px;
     padding: 12px;
     border-radius: 14px;
-    background: rgba(15, 23, 42, 0.45);
-    border: 1px solid rgba(148, 163, 184, 0.1);
+    background: var(--surface-chat-body);
+    border: 1px solid var(--border-faint);
 }
 
 .chat-message {
@@ -939,7 +939,7 @@
     max-width: 80%;
     font-size: 13px;
     line-height: 1.5;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 4px 10px var(--shadow-3);
 }
 
 .chat-message.assistant {
@@ -947,9 +947,9 @@
 }
 
 .chat-message.assistant .bubble {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    color: #e2e8f0;
+    background: var(--surface-bubble);
+    border: 1px solid var(--border-soft);
+    color: var(--text-secondary);
 }
 
 .chat-message.user {
@@ -957,9 +957,9 @@
 }
 
 .chat-message.user .bubble {
-    background: rgba(56, 189, 248, 0.2);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    color: #e0f2fe;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-strong);
+    color: var(--accent-text);
 }
 
 .chat-input {
@@ -982,8 +982,8 @@
     flex-direction: column;
     gap: 8px;
     border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid var(--border);
+    background: var(--surface-input);
     padding: 10px 12px;
 }
 
@@ -994,7 +994,7 @@
     border-radius: 0;
     border: none;
     background: transparent;
-    color: #e2e8f0;
+    color: var(--text-secondary);
     padding: 0;
     outline: none;
     resize: none;
@@ -1009,9 +1009,9 @@
 }
 
 .chat-attachment {
-    border: 1px dashed rgba(148, 163, 184, 0.45);
-    background: rgba(30, 41, 59, 0.35);
-    color: #e2e8f0;
+    border: 1px dashed var(--border-dashed);
+    background: var(--surface-attachment);
+    color: var(--text-secondary);
     padding: 4px 10px;
     border-radius: 999px;
     font-size: 11px;
@@ -1019,7 +1019,7 @@
 }
 
 .chat-attachment:hover {
-    border-color: rgba(148, 163, 184, 0.7);
+    border-color: var(--border-strong);
 }
 
 .chat-actions {
@@ -1043,15 +1043,15 @@
 }
 
 .primary-btn {
-    background: #38bdf8;
-    color: #0f172a;
+    background: var(--accent);
+    color: var(--text-on-accent);
     font-weight: 600;
 }
 
 .ghost-btn {
     background: transparent;
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    color: #e2e8f0;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
 }
 
 .ghost-btn.small {
@@ -1059,7 +1059,7 @@
 }
 
 .muted {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
