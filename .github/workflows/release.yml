@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-publish:
+  build:
     strategy:
       fail-fast: false
       matrix:
@@ -147,6 +147,43 @@ jobs:
           else
             sha256sum dist/* >> dist/checksums.txt
           fi
+
+      - name: Rename checksums by platform
+        shell: bash
+        run: |
+          GOOS="$(go env GOOS)"
+          mv dist/checksums.txt "dist/checksums-${GOOS}.txt"
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ runner.os }}
+          path: dist/
+          if-no-files-found: error
+
+  merge-and-publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-merge
+
+      - name: Merge checksums
+        shell: bash
+        run: |
+          mkdir -p dist
+          find dist-merge -type f \( -name "*.tar.gz" -o -name "*.zip" -o -name "checksums-*.txt" \) -exec cp -f {} dist/ \;
+          if [[ -z "$(ls -A dist 2>/dev/null)" ]]; then
+            echo "Error: dist directory is empty"
+            exit 1
+          fi
+          if [[ -z "$(ls dist/checksums-*.txt 2>/dev/null)" ]]; then
+            echo "Error: No per-platform checksums found"
+            exit 1
+          fi
+          cat $(ls dist/checksums-*.txt | sort) > dist/checksums.txt
 
       - name: Show checksums
         shell: bash
