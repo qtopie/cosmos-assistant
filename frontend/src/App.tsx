@@ -18,6 +18,7 @@ import {
     Spinner,
 } from '@fluentui/react-components';
 import { Home24Regular } from '@fluentui/react-icons';
+import MonacoEditor from '@monaco-editor/react';
 import { EventsOn } from '../wailsjs/runtime/runtime';
 import Dashboard from './pages/Dashboard';
 import WorkBoard from './pages/WorkBoard';
@@ -192,6 +193,12 @@ export default function App() {
     const [installResolve, setInstallResolve] = useState<
         ((result: { confirmed: boolean; password: string }) => void) | null
     >(null);
+    const [vlinkConfigOpen, setVlinkConfigOpen] = useState(false);
+    const [vlinkConfigDraft, setVlinkConfigDraft] = useState('');
+    const [vlinkConfigPath, setVlinkConfigPath] = useState('');
+    const [vlinkConfigError, setVlinkConfigError] = useState('');
+    const [vlinkConfigSaving, setVlinkConfigSaving] = useState(false);
+    const [pendingVlinkStart, setPendingVlinkStart] = useState(false);
     const isWindows = useMemo(
         () => typeof navigator !== 'undefined' && /windows/i.test(navigator.userAgent),
         []
@@ -267,6 +274,14 @@ export default function App() {
                     setInstallViewActive(false);
                 }, 800);
             }
+        });
+
+        EventsOn('vlink:config', (payload: { path?: string; content?: string }) => {
+            setVlinkConfigError('');
+            setVlinkConfigPath(payload?.path ?? '');
+            setVlinkConfigDraft(payload?.content ?? '');
+            setVlinkConfigOpen(true);
+            setPendingVlinkStart(true);
         });
 
         EventsOn('menu:about', async () => {
@@ -375,6 +390,60 @@ export default function App() {
             setInstallResolve(() => resolve);
         });
 
+    const loadVlinkConfig = async () => {
+        const appApi = window.go?.main?.App;
+        if (!appApi || typeof appApi.GetVlinkConfig !== 'function') {
+            return;
+        }
+        try {
+            const config = await appApi.GetVlinkConfig();
+            setVlinkConfigError('');
+            setVlinkConfigPath(config?.path ?? '');
+            setVlinkConfigDraft(config?.content ?? '');
+            setVlinkConfigOpen(true);
+        } catch {
+            setVlinkConfigError('配置加载失败，请稍后重试。');
+            setVlinkConfigOpen(true);
+        }
+    };
+
+    const handleVlinkConfigSave = async () => {
+        const appApi = window.go?.main?.App;
+        if (!appApi || typeof appApi.SaveVlinkConfig !== 'function') {
+            setVlinkConfigError('后端接口未就绪，请重启应用后再试。');
+            return;
+        }
+        setVlinkConfigSaving(true);
+        setVlinkConfigError('');
+        try {
+            await appApi.SaveVlinkConfig(vlinkConfigDraft);
+            setVlinkConfigOpen(false);
+            if (pendingVlinkStart) {
+                setPendingVlinkStart(false);
+                try {
+                    await appApi.StartVlink();
+                    startVlinkPolling();
+                    setIsProxyEnabled(true);
+                } catch {
+                    stopVlinkPolling();
+                    setIsProxyEnabled(false);
+                    setVlinkConfigError('vlink 启动失败，请检查配置后重试。');
+                    setVlinkConfigOpen(true);
+                }
+            }
+        } catch {
+            setVlinkConfigError('配置保存失败，请检查内容后再试。');
+        } finally {
+            setVlinkConfigSaving(false);
+        }
+    };
+
+    const handleVlinkConfigCancel = () => {
+        setVlinkConfigOpen(false);
+        setPendingVlinkStart(false);
+        setIsProxyEnabled(false);
+    };
+
     const handleVlinkToggle = async () => {
         const nextState = !isProxyEnabled;
         try {
@@ -407,7 +476,13 @@ export default function App() {
                     setIsProxyEnabled(true);
                 } catch (startError) {
                     const message = String(startError?.message || startError || '');
+                    const needsConfig = message.includes('vlink config');
                     const shouldPromptInstall = message.includes('no such file') || message.includes('vlink');
+                    if (needsConfig) {
+                        setPendingVlinkStart(true);
+                        await loadVlinkConfig();
+                        return;
+                    }
                     if (shouldPromptInstall && typeof appApi.InstallVlink === 'function') {
                         const result = await requestInstallVlink();
                         if (!result?.confirmed) {
@@ -629,6 +704,53 @@ export default function App() {
                                 }}
                             >
                                 开始安装
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
+
+            <Dialog open={vlinkConfigOpen} onOpenChange={(_, data) => setVlinkConfigOpen(data.open)}>
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>配置 vlink</DialogTitle>
+                        <DialogContent>
+                            <Body1>未检测到 vlink 配置文件，请补充后再启动。</Body1>
+                            <div className="modal-field">
+                                <Caption1>配置路径</Caption1>
+                                <Input value={vlinkConfigPath || '未知路径'} readOnly />
+                            </div>
+                            <div className="modal-field">
+                                <Caption1>配置内容</Caption1>
+                                <div className="vlink-config-editor">
+                                    <MonacoEditor
+                                        value={vlinkConfigDraft}
+                                        onChange={(value) => setVlinkConfigDraft(value ?? '')}
+                                        language="json"
+                                        theme={isDarkMode ? 'vs-dark' : 'vs'}
+                                        options={{
+                                            minimap: { enabled: false },
+                                            fontSize: 13,
+                                            scrollBeyondLastLine: false,
+                                            wordWrap: 'on',
+                                            formatOnPaste: true,
+                                            formatOnType: true,
+                                            automaticLayout: true,
+                                            fontFamily:
+                                                "'Cascadia Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                                        }}
+                                        height={260}
+                                    />
+                                </div>
+                            </div>
+                            {vlinkConfigError && <Caption1>{vlinkConfigError}</Caption1>}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button appearance="secondary" onClick={handleVlinkConfigCancel}>
+                                取消
+                            </Button>
+                            <Button appearance="primary" onClick={handleVlinkConfigSave} disabled={vlinkConfigSaving}>
+                                保存并启动
                             </Button>
                         </DialogActions>
                     </DialogBody>

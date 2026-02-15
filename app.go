@@ -41,6 +41,11 @@ type AppSettings struct {
 	PomodoroNotifySound   bool `json:"pomodoroNotifySound"`
 }
 
+type VlinkConfig struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
@@ -148,21 +153,55 @@ func vlinkBinaryPath() (string, error) {
 	return "/usr/local/bin/vlink", nil
 }
 
-func resolveVlinkConfigPath() string {
+func vlinkHomeConfigPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
-	if err == nil {
-		homeConfig := filepath.Join(homeDir, ".vlink", "config.json")
-		if _, err := os.Stat(homeConfig); err == nil {
-			return homeConfig
-		}
-		if runtime.GOOS == "windows" {
-			return homeConfig
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".vlink", "config.json"), nil
+}
+
+func vlinkConfigExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
+}
+
+func defaultVlinkConfigContent() string {
+	return "{}\n"
+}
+
+func ensureVlinkHomeConfig() (string, bool, error) {
+	homeConfig, err := vlinkHomeConfigPath()
+	if err != nil {
+		return "", false, err
+	}
+	if vlinkConfigExists(homeConfig) {
+		return homeConfig, false, nil
+	}
+	if err := os.MkdirAll(filepath.Dir(homeConfig), 0o755); err != nil {
+		return "", false, err
+	}
+	if err := os.WriteFile(homeConfig, []byte(defaultVlinkConfigContent()), 0o600); err != nil {
+		return "", false, err
+	}
+	return homeConfig, true, nil
+}
+
+func resolveVlinkConfigPath() (string, bool, error) {
+	homeConfig, err := vlinkHomeConfigPath()
+	if err != nil {
+		return "", false, err
+	}
+	if vlinkConfigExists(homeConfig) {
+		return homeConfig, false, nil
+	}
+	if runtime.GOOS != "windows" {
+		systemConfig := "/etc/vlink/config.json"
+		if vlinkConfigExists(systemConfig) {
+			return systemConfig, false, nil
 		}
 	}
-	if runtime.GOOS == "windows" {
-		return ""
-	}
-	return "/etc/vlink/config.json"
+	return ensureVlinkHomeConfig()
 }
 
 // StartVlink starts the vlink process with the configured file.
@@ -178,7 +217,14 @@ func (a *App) StartVlink() (string, error) {
 	if err != nil {
 		return "failed to locate vlink", err
 	}
-	configPath := resolveVlinkConfigPath()
+	configPath, created, err := resolveVlinkConfigPath()
+	if err != nil {
+		return "failed to resolve vlink config", err
+	}
+	if created {
+		a.emitVlinkConfigRequired(configPath)
+		return "vlink config required", fmt.Errorf("vlink config required")
+	}
 	args := []string{}
 	if configPath != "" {
 		args = append(args, "-config", configPath)
@@ -203,6 +249,29 @@ func (a *App) StartVlink() (string, error) {
 	}()
 
 	return "vlink started", nil
+}
+
+func (a *App) GetVlinkConfig() (VlinkConfig, error) {
+	path, _, err := ensureVlinkHomeConfig()
+	if err != nil {
+		return VlinkConfig{}, err
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return VlinkConfig{}, err
+	}
+	return VlinkConfig{Path: path, Content: string(data)}, nil
+}
+
+func (a *App) SaveVlinkConfig(content string) (string, error) {
+	path, _, err := ensureVlinkHomeConfig()
+	if err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		return "", err
+	}
+	return "vlink config saved", nil
 }
 
 // StopVlink stops the running vlink process.
@@ -716,4 +785,15 @@ func (a *App) emitVlinkInstallStatus(message string) {
 		return
 	}
 	wailsruntime.EventsEmit(a.ctx, "vlink:install", message)
+}
+
+func (a *App) emitVlinkConfigRequired(path string) {
+	if a.ctx == nil {
+		return
+	}
+	content := defaultVlinkConfigContent()
+	if data, err := os.ReadFile(path); err == nil {
+		content = string(data)
+	}
+	wailsruntime.EventsEmit(a.ctx, "vlink:config", VlinkConfig{Path: path, Content: content})
 }

@@ -18,6 +18,10 @@ export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
 }
 
+export function GetVlinkConfig() {
+  return window['go']['main']['App']['GetVlinkConfig']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
@@ -36,6 +40,10 @@ export function IsVlinkPortAlive() {
 
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
+}
+
+export function SaveVlinkConfig(arg1) {
+  return window['go']['main']['App']['SaveVlinkConfig'](arg1);
 }
 
 export function SelfUpdate() {

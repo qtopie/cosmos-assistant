@@ -192,6 +192,22 @@
     color: var(--text-secondary);
 }
 
+.vlink-config-editor {
+    margin-top: 8px;
+    height: 260px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+    box-shadow: inset 0 0 0 1px var(--border-faint);
+    background: var(--surface-input);
+}
+
+.vlink-config-editor .monaco-editor,
+.vlink-config-editor .monaco-editor-background,
+.vlink-config-editor .monaco-editor .margin {
+    background-color: transparent !important;
+}
+
 .domour-main {
     display: grid;
     grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr);
