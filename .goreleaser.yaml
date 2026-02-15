@@ -14,6 +14,8 @@ builds:
     binary: domour-copilot
     flags:
       - -tags=production
+    ldflags:
+      - -s -w -X main.appVersion={{ .Version }}
     env:
       - CGO_ENABLED=0
     goos:

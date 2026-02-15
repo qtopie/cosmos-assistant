@@ -46,6 +46,8 @@ type VlinkConfig struct {
 	Content string `json:"content"`
 }
 
+var appVersion = "dev"
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
@@ -67,7 +69,7 @@ func (a *App) startup(ctx context.Context) {
 
 // About returns app info for About dialog
 func (a *App) About() string {
-	return "A smart assistant\n\nMade with ♥ in Guangzhou by ©qtopie 2026"
+	return fmt.Sprintf("A smart assistant.\nVersion: %s\n\nMade with ♥ in Guangzhou by ©qtopie 2026.", appVersion)
 }
 
 // Greet returns a greeting for the given name
