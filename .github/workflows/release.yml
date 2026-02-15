@@ -143,9 +143,9 @@ jobs:
             exit 1
           fi
           if [[ "${RUNNER_OS}" == "Darwin" ]]; then
-            shasum -a 256 dist/* >> dist/checksums.txt
+            shasum -a 256 dist/* | awk '{sub(".*/","",$2); print}' > dist/checksums.txt
           else
-            sha256sum dist/* >> dist/checksums.txt
+            sha256sum dist/* | awk '{sub(".*/","",$2); print}' > dist/checksums.txt
           fi
 
       - name: Rename checksums by platform
@@ -184,6 +184,7 @@ jobs:
             exit 1
           fi
           cat $(ls dist/checksums-*.txt | sort) > dist/checksums.txt
+          rm -f dist/checksums-*.txt
 
       - name: Show checksums
         shell: bash
@@ -204,6 +205,16 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+
+      - name: Remove old artifacts on server
+        shell: bash
+        run: |
+          ssh -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p \"${SSH_PATH}\" && rm -f \"${SSH_PATH}\"/*"
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: ${{ secrets.SSH_USER || 'ubuntu' }}
+          SSH_PATH: ${{ secrets.SSH_PATH || '/var/www/html/qtopie.space/downloads/domour' }}
 
       - name: Publish artifacts to server
         shell: bash
