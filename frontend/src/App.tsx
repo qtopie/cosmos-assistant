@@ -192,6 +192,10 @@ export default function App() {
     const [installResolve, setInstallResolve] = useState<
         ((result: { confirmed: boolean; password: string }) => void) | null
     >(null);
+    const isWindows = useMemo(
+        () => typeof navigator !== 'undefined' && /windows/i.test(navigator.userAgent),
+        []
+    );
 
     const [activeView, setActiveView] = useState<'home' | 'settings' | 'board' | 'editor' | 'pomodoro'>('home');
     const [settingsDraft, setSettingsDraft] = useState<AppSettings | null>(null);
@@ -589,16 +593,22 @@ export default function App() {
                         <DialogTitle>安装 vlink</DialogTitle>
                         <DialogContent>
                             <Body1>未检测到 vlink，是否自动下载安装？</Body1>
-                            <div className="modal-field">
-                                <Caption1>sudo 密码</Caption1>
-                                <Input
-                                    type="password"
-                                    value={vlinkPassword}
-                                    onChange={(event) => setVlinkPassword(event.target.value)}
-                                    placeholder="请输入 sudo 密码"
-                                />
-                                <Caption1>密码仅用于本次安装，不会保存。</Caption1>
-                            </div>
+                            {!isWindows ? (
+                                <div className="modal-field">
+                                    <Caption1>sudo 密码</Caption1>
+                                    <Input
+                                        type="password"
+                                        value={vlinkPassword}
+                                        onChange={(event) => setVlinkPassword(event.target.value)}
+                                        placeholder="请输入 sudo 密码"
+                                    />
+                                    <Caption1>密码仅用于本次安装，不会保存。</Caption1>
+                                </div>
+                            ) : (
+                                <div className="modal-field">
+                                    <Caption1>Windows 无需 sudo 密码。</Caption1>
+                                </div>
+                            )}
                         </DialogContent>
                         <DialogActions>
                             <Button
@@ -614,7 +624,8 @@ export default function App() {
                                 appearance="primary"
                                 onClick={() => {
                                     setInstallModalOpen(false);
-                                    if (installResolve) installResolve({ confirmed: vlinkPassword.trim().length > 0, password: vlinkPassword.trim() });
+                                    const trimmed = vlinkPassword.trim();
+                                    if (installResolve) installResolve({ confirmed: isWindows || trimmed.length > 0, password: trimmed });
                                 }}
                             >
                                 开始安装

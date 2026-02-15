@@ -171,9 +171,10 @@ jobs:
       - name: Publish artifacts to server
         shell: bash
         run: |
+          ssh -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "mkdir -p \"${SSH_PATH}\""
           scp -r -P "${SSH_PORT}" dist/* "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: ${{ secrets.SSH_USER || 'ubuntu' }}
-          SSH_PATH: ${{ secrets.SSH_PATH || '/var/www/html/qtopie.space/downloads/' }}
+          SSH_PATH: ${{ secrets.SSH_PATH || '/var/www/html/qtopie.space/downloads/domour' }}

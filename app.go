@@ -137,6 +137,34 @@ func saveSettingsToDisk(settings AppSettings) error {
 	return os.WriteFile(path, data, 0o600)
 }
 
+func vlinkBinaryPath() (string, error) {
+	if runtime.GOOS == "windows" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(homeDir, ".vlink", "vlink.exe"), nil
+	}
+	return "/usr/local/bin/vlink", nil
+}
+
+func resolveVlinkConfigPath() string {
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		homeConfig := filepath.Join(homeDir, ".vlink", "config.json")
+		if _, err := os.Stat(homeConfig); err == nil {
+			return homeConfig
+		}
+		if runtime.GOOS == "windows" {
+			return homeConfig
+		}
+	}
+	if runtime.GOOS == "windows" {
+		return ""
+	}
+	return "/etc/vlink/config.json"
+}
+
 // StartVlink starts the vlink process with the configured file.
 func (a *App) StartVlink() (string, error) {
 	a.vlinkMu.Lock()
@@ -146,15 +174,17 @@ func (a *App) StartVlink() (string, error) {
 		return "vlink is already running", nil
 	}
 
-	configPath := "/etc/vlink/config.json"
-	if homeDir, err := os.UserHomeDir(); err == nil {
-		homeConfig := filepath.Join(homeDir, ".vlink", "config.json")
-		if _, err := os.Stat(homeConfig); err == nil {
-			configPath = "/etc/vlink/config.json"
-		}
+	binaryPath, err := vlinkBinaryPath()
+	if err != nil {
+		return "failed to locate vlink", err
+	}
+	configPath := resolveVlinkConfigPath()
+	args := []string{}
+	if configPath != "" {
+		args = append(args, "-config", configPath)
 	}
 
-	cmd := exec.Command("/usr/local/bin/vlink", "-config", configPath)
+	cmd := exec.Command(binaryPath, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -301,7 +331,7 @@ func (a *App) SelfUpdate() (string, error) {
 // SelfUpdateFromArchive downloads and applies an update for the given version.
 // If version is empty, "latest" is used.
 func (a *App) SelfUpdateFromArchive(version string) (string, error) {
-	baseURL := "https://qtopie.space/downloads/dist/"
+	baseURL := "https://qtopie.space/downloads/domour/"
 	finalVersion := strings.TrimSpace(version)
 	if finalVersion == "" || finalVersion == "latest" {
 		latest, err := fetchLatestVersionFromChecksums(baseURL, "domour-copilot")
@@ -420,16 +450,17 @@ func extractFromTarGz(data []byte, expected string) ([]byte, error) {
 }
 
 func (a *App) IsVlinkInstalled() bool {
-	if runtime.GOOS == "windows" {
+	binaryPath, err := vlinkBinaryPath()
+	if err != nil {
 		return false
 	}
-	_, err := os.Stat("/usr/local/bin/vlink")
+	_, err = os.Stat(binaryPath)
 	return err == nil
 }
 
 func (a *App) InstallVlink(version string, sudoPassword string) (string, error) {
 	if runtime.GOOS == "windows" {
-		return "", fmt.Errorf("vlink install is not supported on Windows")
+		return a.installVlinkForWindows(version)
 	}
 	trimmedPassword := strings.TrimSpace(sudoPassword)
 	if trimmedPassword == "" {
@@ -474,8 +505,54 @@ func (a *App) InstallVlink(version string, sudoPassword string) (string, error) 
 	return "vlink installed", nil
 }
 
+func (a *App) installVlinkForWindows(version string) (string, error) {
+	a.emitVlinkInstallStatus("开始安装 vlink")
+
+	binaryData, err := downloadVlinkBinary(version)
+	if err != nil {
+		a.emitVlinkInstallStatus("vlink 下载失败")
+		return "", err
+	}
+	a.emitVlinkInstallStatus("vlink 下载完成")
+
+	binaryPath, err := vlinkBinaryPath()
+	if err != nil {
+		a.emitVlinkInstallStatus("无法确定安装路径")
+		return "", err
+	}
+	if err := os.MkdirAll(filepath.Dir(binaryPath), 0o755); err != nil {
+		a.emitVlinkInstallStatus("创建目录失败")
+		return "", fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	tmpFile, err := os.CreateTemp(filepath.Dir(binaryPath), "vlink-*")
+	if err != nil {
+		a.emitVlinkInstallStatus("写入临时文件失败")
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write(binaryData); err != nil {
+		_ = tmpFile.Close()
+		a.emitVlinkInstallStatus("写入临时文件失败")
+		return "", fmt.Errorf("failed to write temp file: %w", err)
+	}
+	if err := tmpFile.Close(); err != nil {
+		a.emitVlinkInstallStatus("写入临时文件失败")
+		return "", fmt.Errorf("failed to close temp file: %w", err)
+	}
+
+	if err := os.Rename(tmpFile.Name(), binaryPath); err != nil {
+		a.emitVlinkInstallStatus("安装失败")
+		return "", fmt.Errorf("failed to move vlink: %w", err)
+	}
+
+	a.emitVlinkInstallStatus("安装完成")
+	return "vlink installed", nil
+}
+
 func downloadVlinkBinary(version string) ([]byte, error) {
-	baseURL := "https://qtopie.space/downloads/dist/"
+	baseURL := "https://qtopie.space/downloads/vlink/"
 	finalVersion := strings.TrimSpace(version)
 	if finalVersion == "" || finalVersion == "latest" {
 		latest, err := fetchLatestVersionFromChecksums(baseURL, "vlink")
